@@ -1,4 +1,4 @@
-##c++做题
+#c++做题
 
 1. <iomanip>使用setprecision(n)可控制输出流显示**浮点数的数字**个数,setprecision(n)与setiosflags(ios::fixed)，setprecision(n)与setiosflags(ios::fixed)**合用**，可以控制小数点右边的数字个数，可以控制小数点右边的数字个数
 
@@ -13,8 +13,9 @@
 6. memset(a,0,sizeof(a))，将数组a初始化为0的函数     头文件<cstring>
 
 7. 判断质数的方式：
-    1. 偶数位数回文数（除了11）必定不是质数
-    2. 偶数肯定不是质数
+
+   1. 偶数位数回文数（除了11）必定不是质数
+   2. 偶数肯定不是质数
 
 8. int的范围   -32768~32767
 
@@ -24,19 +25,19 @@
 
 10. vector函数： 
 
-  a.empty(); //判断a是否为空，空则返回ture,不空则返回false
+    a.empty(); //判断a是否为空，空则返回ture,不空则返回false
 
-  a.back(); //返回a的最后一个元素
+    a.back(); //返回a的最后一个元素
 
-  a.front(); //返回a的第一个元素
+    a.front(); //返回a的第一个元素
 
-  a.pop_back(); //删除a向量的最后一个元素
+    a.pop_back(); //删除a向量的最后一个元素
 
-  a.push_back(x) //在向量最后位置插入
+    a.push_back(x) //在向量最后位置插入
 
 
 
-10.   queue函数
+10. queue函数
 
     push() 在队尾插入一个元素
 
@@ -50,8 +51,6 @@
 
     back() 返回队列中最后一个元素
 
-
-
 11. <algorithm>头文件 :  max()、min()、abs()、
 
 12. typedef pair<int,int> PII   可以用来存储像坐标一样的数据类型
@@ -62,11 +61,37 @@
 
     memset(a,INF,sizeof(a))。//通过这种方式，将数组初始化为无穷大
 
+15. set函数：
 
+    insert()   //插入元素
 
-## java
+    erase()   //删除元素
 
-**Object类**：每个类都直接或间接继承Object类，所有类型的基类
+    count()  // 判断元素是否存在
+
+    size()    //获取元素个数
+
+    clear()   //清空集合
+
+# java
+
+super关键字必须是子类构造方法中的第一条语句
+
+子类不继承父类的构造方法！！！
+
+接口不允许继承抽象类，但允许一个接口继承多个接口
+
+JFrame 缺省布局使用的是边界布局管理器(BorderLayout).
+
+JPanel 缺省布局使用的是流式布局管理器(FlowLayout).
+
+JFrame是JWindow类的直接子类
+
+##javaAPI
+
+###Object类
+
+每个类都直接或间接继承Object类，所有类型的基类
 
 ```java
 String toString();//返回对象的字符串表示形式
@@ -76,7 +101,9 @@ boolean equals();//判断两个对象是否相等
 
 
 
-**String类**：创建对象后是个常量，内容和长度不可改变，如果对一个字符串进行修改需要创建一个新的字符串
+###String类
+
+创建对象后是个常量，内容和长度不可改变，如果对一个字符串进行修改需要创建一个新的字符串
 
 ```java
 char charAt(int index);//返回位置上的字符
@@ -84,17 +111,38 @@ boolean equals(String string);//字符串比较
 String toUpperCase();//将字符串大写
 static String valueOf(int i);//将整型转换为字符串
 char[] toCharArray(String str);//将字符串转化为字符数组
+byte[] getBytes();//将字符串转化为字节数组
 ```
 
-**StringBuffer类**：类似一个字符容器
+###StringBuffer类
+
+是一个字符串缓冲区，内容和长度可以改变，增添和删除不会产生新对象
+
+**线程安全**的，不能被同步访问
 
 ```java
-StringBuffer append(char c);//添加
+StringBuffer append(char c);//添加,也可以添加字符串
 StringBuffer insert(int index,String str);//插入
+
 StringBuffer deleteCharAt(int index);//删除
+StringBuffer delete(int start,int end);//删除指定范围的字符串
+
+void setCharAt(int index,char ch);//修改指定位置的字符序列
+StringBuffer replace(int start,int end,String s);//替换指定范围的字符串
+
+String toString();//返回StringBuffer缓冲区中的字符串
+StringBuffer reverse();//将字符串反转
 ```
 
-**System类**:属性和方法都是静态的，所以可以直接用类名调用
+###StringBuilder类  
+
+**非线程安全**的，可以被同步访问。操作与StringBuffer类似，但**效率最高**
+
+
+
+###System类
+
+属性和方法都是静态的，所以可以直接用类名调用
 
 ```java
 static void currentTimeMills();//返回以毫秒为单位的当前时间
@@ -102,20 +150,140 @@ static void currentTimeMills();//返回以毫秒为单位的当前时间
 static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length);
 ```
 
-**Thread类**
+###Thread类
 
 ```java
 static void sleep(long millis);//使程序休眠millis毫秒，静态方法
 ```
 
+### Random类
+
+import java.util.Random
+
+```java
+Random Random();//构造方法，不传入种子，默认以系统时间作为种子
+Random Random(long seed);//具有相同的种子，会产生相同的序列
+
+double nextDouble();   
+float nextFloat();
+int nextInt();
+int nextInt(int n);//产生[0,n)的随机数
+```
+
+
+
+
+
+##集合
+
+import  **java.util ** 包中
+
+###Collection集合     单列集合
+
  **Iterator接口**
 
 ```java
+//迭代器的索引位于第一个元素之前，不指向任何元素
 Iterator it=list.iterator();//获得对象的迭代器
 void remove();//利用迭代器的方法删除集合中的某个数据
 void hasNext();//判断集合中是否存在下一个元素
-void Next();//获取迭代器指代的元素
+void Next();//将迭代器的索引向后移一位，并获取迭代器指代的元素 ，
+			//迭代器获得的元素都是Object类型，如果想获得特定类型，需要进行强制转换
+
+//迭代删除元素
+正确：it.remove()//利用删除元素的迭代器来删除元素,remove为迭代器对象的方法
+错误：list.remove(obj)
 ```
+
+**List接口**
+
+```java
+//ArrayList集合
+
+```
+
+
+
+**set接口**
+
+```java
+/*add()添加元素时，为了确保不重复的元素 
+1.先获取当前存入对象的hashCode()的散列值 
+2.通过散列值计算出一个存储位置 
+3.判断是否有对象存在，如果存在就舍弃，如果不存在就存入集合*/
+HashSet集合  //内部元素无序
+TreeSet集合  //可以对集合中的元素进行排序
+//自然排序
+自定义类需要继承Comparable接口，并重写接口中的 compareTo()方法
+public int compareTo(Student o){
+    return 0;//集合中只有一个元素
+    return 1;//按照怎么存怎么取
+    return -1;//按照存入元素的到序进行存储
+}
+//另一中排序方式--比较器排序
+实现 Comparator()接口中的compare()方法和equals()方法
+```
+
+###Map集合 双列集合
+
+```java
+//HashMap
+Set keySet()    //获得映射中包含键的Set视图
+Collection<V> values()  //返回映射中包含的值的Collection视图 Collection是所有单列集合的父接口
+Set<Map.Entry<K,V>>entrySet();//获得映射中键值对的集合
+boolean containsKey(Object key) //判断是否包含某个键
+boolean containsValue(Object value) //判断是否包含某个值
+```
+
+```java
+//遍历Map
+
+//第一种方式   先获取key的集合，通过遍历key集合获得value
+		Set keySet=map.keySet();
+		Iterator it=keySet.iterator();
+		while(it.hasNext()) {
+			Object key=it.next();
+			Object value=map.get(key);
+			System.out.println("key:"+key+"    value:"+value);
+		}
+//第二种方式
+		Set entrySet=map.entrySet();
+		Iterator it=entrySet.iterator();
+		while(it.hasNext()) {
+            //每个Map.Entry对象代表Map中的一个键值对(Entry是Map内部接口)
+			Map.Entry entry=(Map.Entry)(it.next()); 
+			Object key=entry.getKey();
+			Object value=entry.getValue();
+			System.out.println("key:"+key+"     value:"+value);
+		}
+	}
+```
+
+**Properties集合**
+
+```java
+//Properties集合可以用来存取应用的配置项
+//主要用来存储字符串类型的键和值
+
+		Properties p=new Properties();  
+		//存字符串
+		p.setProperty("1", "jack"); 
+		p.setProperty("2", "lucy");
+		p.setProperty("3", "mike");
+		//获取Enumeration对象所有键的枚举
+		Enumeration names=p.propertyNames();
+		//循环遍历所有键
+		//hasMoreElements()：判断Enumeration对象中是否还有数据
+		while(names.hasMoreElements()) {
+            //nextElement()：获取Enumeration对象中的下一个数据
+			String key=(String) names.nextElement();
+            //获得对应键的值
+			String value=p.getProperty(key);
+			System.out.println("key:"+key+"     value:"+value);
+		}
+```
+
+
 
 **foreach循环**
 
@@ -126,11 +294,133 @@ for(Object obj : List);//Object 是集合中的元素类型
 for(String str : strs);//访问字符串集合中的元素
 ```
 
+
+
 **instanceof运算符**
 
 用于强制转换前判断对象的真实类型，以免转换异常
 
-**实现JDBC程序（连接数据库）**
+
+
+## 文件
+
+**import  java.io.* ;**
+
+###File类
+
+```java
+File file=new File("src/yzy.txt");//相对路径
+		try {
+			if(file.exists()) {
+				file.delete();
+			}else {、
+                //创建新文件
+				System.out.println(file.createNewFile());
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+```
+
+###字节流   
+
+顶级父类是**InputStream类**和**OutputStream类**
+
+```java
+int read();//读取一个字节
+int read(byte[] b);//读取若干个字节，返回字节数
+void close();//关闭输入流并释放与该流关联的所有系统资源
+```
+
+```java
+//读取文件
+		FileInputStream input=null;
+		try {
+            //在项目根目录下的文件
+			input=new FileInputStream("yzy.txt");
+			while(true) {
+				//将一字节转换为int类型
+				int b=input.read();//一次读取一个字节
+				if(b==-1) {
+					break;
+				}else {
+					System.out.print((char)b);
+					
+				}
+			}
+            
+		}catch(IOException e) {
+			e.printStackTrace();
+		}finally {
+			//关闭字节输入流
+			if(input!=null) {
+				input.close();
+			}
+		}
+```
+
+
+
+```java
+void write(int b);//向输出流写入一个字节
+void write(byte[] b);//把字节数组中的字节全部写入输出流
+```
+
+```java
+//写文件
+		FileOutputStream output=null;
+		try {
+			output=new FileOutputStream("yzy.txt",true);//true表示在文件中追加内容
+			String str="牛牛牛";
+			byte[] b=str.getBytes();//将字符串转化为字节数组
+			for(int i=0;i<b.length;i++) {
+				output.write(b[i]);
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}finally {
+			if(output!=null) {
+				output.close();
+			}
+		}
+```
+
+###字符流
+
+```java
+		//利用包装流提高读写数据的效率
+		BufferedReader br=null;
+		BufferedWriter bw=null;
+		try {
+			FileReader reader=new FileReader("yzy.txt");
+			//创建一个BufferedReader缓冲对象,相当于赋予字符流对象缓冲区
+			br=new BufferedReader(reader);
+			//在文件后面添加内容
+			FileWriter writer=new FileWriter("new.txt",true);
+			//创建一个BufferedWriter缓冲对象
+			bw=new BufferedWriter(writer);
+			String str;
+			//每次读取一行文本，判断是否到末尾
+            //readLine() 用来一次读取一行文本
+			while((str=br.readLine())!=null) {
+				bw.write(str);
+				bw.write("\n");
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}finally {
+			br.close();
+			bw.close();
+		}
+```
+
+
+
+
+
+##JDBC程序（连接数据库）
+
+
 
 ```java
 package cn.itcast.java_exam;
@@ -206,13 +496,13 @@ public class java_question2 {
 
 
 
-**GUI(用户图形界面)**
+##GUI(用户图形界面)
 
 
 
 
 
-## Python
+# Python
 
 str.isdigit()  //判断字符串是不是由数字组成
 
@@ -228,29 +518,249 @@ count(子串，start,end)  //查找子串出现的次数
 
 rstrip()  //删除字符串右边的空白
 
+split()   // 以空格分隔字符串
+
+center(width,"填充字符")    
+
+str.replace(old,new)    //将字符串中的字符或字符串替换成新的字符串 
+
+str.capitalize()             //将字符串开头大写，其余部分变为小写
+
+str.format(a,b)     //字符串格式化    将变量按顺序填入到字符串中的{}中
+
 in 是成员操作符，可以对序列（字符串、元组、列表、集合）做判断成员是否在其中
 
 isdisjoint()  函数用于判断两个集合是否有相同的元素
 
 空集合只能通过set()创建
 
+单引号里不能再有单引号
+
+os模块 chdir 方法来改变默认目录   getcmd获得当前目录
+
+匿名函数使用 lambda关键字定义     //在定义是需要定义一个变量调用该表达式  
+
+```python
+result=lambda r,p:r*r*p
+print(result(2,3))
+```
+
+查看关键字列表方法   keyword.kwlist
+
+\__mro__ 可以查看方法搜索顺序
+
+Python不允许Tab键和空格混合使用
+
+//整除           /除  结果是浮点型
+
+定义函数时指定了默认值的参数（关键字参数）必须在**没有默认值**的参数之后
+
+p=list.index(value)    获得某个元素的下标
+
+## Python方法
+
+1. **类实例方法**
+
+   通过对象调用，传参的第一个参数默认为self
+
+2. **类方法**
+
+   通过类调用，传参的第一个参数默认为cls，用@classmethod修饰
+
+   ```python
+   @classmethod
+   def info(cls):
+   	print("正在调用类方法")
+   ```
+
+   
+
+3. **类静态方法**
+
+   既可以使用类调用，也可以使用实例调用。无法调用任何类属性和类方法
+
+   没有像self、cls这样特殊的参数，需要用＠staticmethod修饰
 
 
-**文件**
+
+##文件读取
 
 with open("文件名")  as  文件对象名 ：
 
-​	contents=file.read()   //read() 方法读取文件的全部内容，并在文件末尾是返回一个空字符串，显示出来是个空行
+​	contents=file.**read()**   //read() 方法读取文件的全部内容，并在文件末尾是返回一个空字符串，显示出来是个空行,
+
+​		                                  //支持读取**指定字节**的内容
+
+readlines()   //读取文件每一行并存在一个列表中
+
+readline()     // 之有在一组打开与关闭操作之间，readline()才会逐行读取。若重新打开文件，readline()将会从第一行开始读取。
+
+##文件写入
+
+在 open中提供另一个实参
+
+读取模式 ‘r’     写入模式 ‘w’     附加模式  ‘a’    读写模式  ‘r+’       
+
+write()  //该方法用于写入文件时使用
+
+python只能将**字符串**写入文本文件，存取**数值数据**是需要str()转换为字符串格式
 
 
 
-**pyinstaller -F 测试.py**    cmd中打包py文件，生成可执行文件
+##异常
+
+**BaseException** —— 所有异常的基类
+
+**Exception** —— 常规错误的基类
+
+当用户定义的条件不满足时，它会触发**AssertionError**异常
+
+**try-except-else 代码块**
+
+try中书写可能引发异常的语句，except中书写产生异常后需要进行的处理，else中书写语句正常执行的代码
+
+except没有指明异常，就不会捕获任何异常
+
+在except中添加**pass**语句，表示发生异常时**静默**，但程序还是照常执行
+
+
+
+**raise语句**：主动抛出异常，在try中被捕获由except处理
+
+当在没有引发过异常的程序使用**无参**的 raise 语句时，它默认引发的是 RuntimeError 异常
+
+或者是引发上一个异常
+
+```python
+try:
+    a = input("输入一个数：")
+    #判断用户输入的是否为数字
+    if(not a.isdigit()):
+        raise ValueError("a 必须是数字")
+except ValueError as e:
+    print(e)
+```
+
+**自定义异常类**
+
+```python
+#Exception是基类
+class MyException(Exception):
+    def __init__(self,string):
+        super().__init__(self)   	#调用基类的构造函数
+        self.string=string       	
+    def __str__(self):              
+        return self.string
+#抛出异常   
+raise MyException("输入内容必须为整数")
+print(e)
+```
+
+
+
+**捕获异常**
+
+1. 使用 sys 模块中的 exc_info 方法；
+2. 使用 traceback 模块中的相关函数。
+
+```python
+#exc_info() 方法会将当前的异常信息以元组的形式返回，该元组中包含 3 个元素，分别为 type、value 和 traceback
+print(sys.exc_info())
+
+ # 捕捉异常，并将异常传播信息输出控制台
+ traceback.print_exc()
+ # 捕捉异常，并将异常传播信息输出指定文件中
+ traceback.print_exc(file=open('log.txt', 'a'))
+```
+
+
+
+
+
+##CSV库
+
+
+
+##json模块
+
+**import json**
+
+json是一种轻量级数据交换格式
+
+json.dump("数据"，"文件对象")    //用来将python转化为json类型 并写入文件
+
+json.load("文件对象")                      //加载json中的信息到内存中
+
+
+
+##pyinstaller库
+
+**import pyinstaller**
+
+ **pyinstaller -F 测试.py**    cmd中打包py文件，生成可执行文件
 
 -f 指定生成单独的exe文件(放在dis文件夹中)
 
 -w 表示程序后台运行，没有窗口 （仅对 Windows 有效）
 
 -c 表示提供程序视窗    （仅对 Windows 有效）
+
+## python画图
+
+1）figure相当于大画布，整个作图的大环境
+2）axes相当于是小画布，一个figure上能有很多的axes（通过subplot 来设置他们的排列顺序）
+3）经典问题：plt.plot和ax.plot的区别
+相比于前者，后者相当于是线生产出figure 再生产出axes画了一个图。plt.plot()通过plt.gca()获得当前的Axes，再调用ax.plot()方法实现绘图。然这句话读起来确实有一些拗口，就这么说吧，真的要标准的画图，用ax.plot肯定是要标准一些的。 我称之其为《最标准的过程》
+
+```python
+#二维图
+plt.rcParams['font.sans-serif'] = 'SimHei'  #正确显示中文
+plt.rcParams['axes.unicode_minus'] = False ## 设置正常显示符号
+x=np.arange(1,10,1)
+y= x**2
+
+Ix=[random.randrange(0,100) for i in range(100)]
+Iy=[random.randrange(0,100) for i in range(100)]
+fig,axes=plt.subplots(2,3,figsize = (15, 10))  #这个参数默认的情况下是1
+#通过索引访问不同的子图
+axes[0][0].plot(x,y,label='抛物线')
+axes[0][0].set_title('抛物线') #设置子图标题
+axes[0][0].set_xlabel('x') #设置横坐标名称
+axes[0][0].set_ylabel('y') #设置纵坐标名称
+axes[0][0].legend(loc='best')
+axes[0][0].set_xlim(0,10) #设置坐标轴范围
+
+axes[1][1].scatter(Ix,Iy)
+plt.show()
+
+```
+
+```python
+#画三维图
+import matplotlib.pyplot as plt
+import numpy as np
+plt.rcParams['font.sans-serif']=['SimHei']  #用来显示正确的中文图例
+plt.rcParams['axes.unicode_minus']=False    # 默认是使用Unicode负号，设置正常显示字符，如正常显示负号
+fig=plt.figure()
+ax=plt.axes(projection='3d')
+#限定x,y轴的范围
+xx=np.arange(-3,3,0.01)
+yy=np.arange(-3,3,0.01)
+#生成网格点的坐标矩阵
+X,Y=np.meshgrid(xx,yy)
+Z=(X+Y)**2+np.sin(Y)
+
+plt.xlabel('x轴')
+plt.ylabel('y轴')
+
+ax.plot_surface(X,Y,Z)
+plt.show()
+
+```
+
+
+
+##网络爬虫
 
 **1.获取html网页**
 
@@ -306,8 +816,6 @@ soup.div.find_all(‘img’)	#会找到所有div里面的img标签。
 
 
 
-
-
 ```python
 '''
 find()方法先找到对应的标签，{}里面是对应标签里面的键值对(属性)，也是用来查找用的,只返回单个元素
@@ -326,11 +834,156 @@ for child in children:
    
 ```
 
-------
+
+
+###urllib库
+
+request模块：
+
+parse模块：工具模块
+
+error模块：异常处理模块   URLError
+
+```python
+#建立Request对象发起请求，可以添加headers模拟浏览器访问
+from urllib import request,parse,error                                    
+url='http://www.httpbin.org/post' 
+#用来将字符串转化为字节流类型  发起请求时，方法中的data参数需要是字节流类型的 
+#parse模块中的urlencode方法用来将字典转化为字符串
+data=bytes(parse.urlencode({'name':'germey'}),encoding='utf-8')         
+headers={                                                                 
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ',            
+    'Host' : 'www.httpbin.org',                                           
+    'Content-Type':'application/x-www-form-urlencoded'                    
+}                                                                         
+try:
+    #不同于一般urlopen方法直接发起请求，这里先利用Request方法创建一个Request对象，然后利用这个对象发起请求
+    #这种方式可以加入headers信息，添加User-Agent，用来模拟浏览器发起请求
+    req=request.Request(url,data=data,headers=headers,method='POST')      
+    response=request.urlopen(req)
+	#处理可能发生的异常	
+except error.URLError as e:
+     print(e.reason)
+else:                                                                     
+     print(response.read().decode('utf-8'))                               
+```
+
+为了实现更高级的功能，需要深入一层的配置，原始的urlopen(也是个Opener)方法已经不适用了，需要构建新的Opener对象来发起请求.。**利用 Handler类来构建Opener类**
+
+####HTTPBasicAuthHandler类
+
+用来处理链接的认证问题
+
+```python
+#爬取有认证问题的网站
+from urllib.request import HTTPPasswordMgrWithDefaultRealm,HTTPBasicAuthHandler,build_opener
+from urllib import request
+from urllib import error
+#取消服务器证书验证功能，python默认开启服务器证书验证功能
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+url='http://ssr3.scrape.center/'
+username='admin'
+password='admin'
+p=HTTPPasswordMgrWithDefaultRealm()
+#将用户名和密码填入对象
+p.add_password(None,url,username,password)
+auth_handler=HTTPBasicAuthHandler(p)
+#新的Opener对象
+opener=build_opener(auth_handler)
+try:
+    result=opener.open(url)
+    html=result.read().decode('utf-8')
+    print(html)
+except error.URLError as e:
+    print(e.reason)
+```
 
 
 
-## 网络
+####HTTPCookieProcessor类
+
+用于处理Cookie
+
+```python
+import urllib.request
+import http.cookiejar
+from urllib import error
+import socket
+filename='LWPcookie.txt'
+#将Mazilla格式的cookie保存到Mozillacookie.txt文件中
+#cookie=http.cookiejar.MozillaCookieJar(filename)
+#将LWP格式的cookie保存到文件中
+cookie=http.cookiejar.LWPCookieJar(filename)
+cookie.save(ignore_discard=True,ignore_expires=True)
+#用来处理Cookie方法,获得浏览器的cookie
+handle=urllib.request.HTTPCookieProcessor(cookie)
+opener=urllib.request.build_opener(handle)
+url='http://www.baidu.com/404'
+try:
+    response = opener.open(url,timeout=0.01)
+#先捕捉子类的错误,再捕捉父类的错误
+#HTTPError是URLError的子类
+except error.HTTPError as e:
+    print(e.reason,e.code,e.headers)
+except error.URLError as e:
+    print(type(e.reason))
+    #reson返回的不一定是字符串，利用isinstance方法判断返回结果是否为socket.timeout来判断是否超时
+    if isinstance(e.reason,socket.timeout):
+        print('TIME OUT')
+else:
+    print('Request successfully')
+```
+
+
+
+####robotparser模块
+
+可以用于分析robot.txt文件判断网页是否可以抓取
+
+```python
+from urllib.robotparser import RobotFileParser
+url='https://www.baidu.com/robots.txt'
+#创建一个RobotFileParser对象
+rp=RobotFileParser(url)
+#执行read方法对文件进行分析，没有返回值，但如果不调用，接下来的判断都是False
+rp.read()
+#判断网页对于某个Uer-agent是否可以抓取
+print(rp.can_fetch('Baiduspider','https://www.baidu.com/homepage'))
+print(rp.can_fetch('Googlebot','https://www.baidu.com/homepage'))
+```
+
+
+
+###requests模块
+
+```python
+import requests
+import re
+#抓取网页
+url1='https://ssr1.scrape.center/'
+#将ssl证书验证关闭
+request=requests.get(url1,verify=False)
+#编写正则表达式
+pattern=re.compile('<h2.*?>(.*?)</h2>',re.S)
+title=re.findall(pattern,request.text)
+print(title)
+```
+
+```python
+import requests
+import re
+#抓取二进制数据
+url2='https://scrape.center/favicon.ico'
+r=requests.get(url2)
+# print(r.text)
+# print(r.content) 
+with open('favicon.ico','wb') as f:
+    #r.content获得的是响应的byte类型
+    f.write(r.content)
+```
+
+# 网络
 
 
 
@@ -342,11 +995,19 @@ for child in children:
 
 **DNS** 域名系统(Domain Name System)    将域名和IP地址相互映射的一个分布式数据库
 
-**TCP**是一款面向连接的协议    **UDP**就被称为是一种“无连接”的协议    (**属于传输层**)
+
+
+**TCP**是一款面向连接的协议    **UDP**就被称为是一种“无连接”的协议    (**属于传输层**)   都是构建在 IP 协议之上。
+
+当发起一个 TCP 连接时, 客户端首先自己先随机挑选一个没有被使用的端口作为服务器响应的接收端口, 比如 38672. 在一个 **TCP 的包**里, 无论是握手包还是后续的数据包, 包头部分最重要的两个字段, 一个就是**源端口(source port)**, 比如 38672; 另一个就是**目标端口(destination port)**, 比如 80, 或者 443. 而 TCP 包会作为 **IP 包**的数据包被打包到 IP 包里面, 也一个 IP 包里其实包含了 **IP + 端口.**
+
+**端口**：一个数据包包括了文件，ip，和**端口号**，ip是为了服务器可以找到你的主机，端口号是你接受数据包的门户(多进程中的其中一个进程)， 而所谓的**端口监听**，是指主机网络进程接受到IP数据包后，察看其的目标端口是不是自己的端口号，如果是的话就接受该数据包进行处理。
+
+
 
 超文本传输协议，即Hyper Text Transfer Protocol——**HTTP**，是一个为了使客户端和服务器顺利进行通讯而设计的协议。
 
-http属于**应用层**，以下为常见的请求方法
+http属于**应用层**，以下为常见的请求方法：
 
 GET()——从指定的服务器中获取数据, 传输的参数直接暴露在URL上
 
@@ -354,3 +1015,18 @@ POST()——提交数据给指定的服务器处理
 
 
 
+**ping命令**：对一个网址发送测试数据包，看对方网址是否有响应并统计响应时间，以测试网络的连通性
+
+
+
+
+
+
+
+git pull
+
+add .
+
+git commit
+
+git push
