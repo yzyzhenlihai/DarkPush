@@ -909,6 +909,10 @@ Booting算法
 
    * **最小二乘法**
 
+     本质上就是直接利用导数求极值的方式直接获得最大值或最小值。与梯度下降法的区别就是，梯度下降法通过每次选择梯度最大的方向前进，不断改变w和b的值，直到达到相对最优解（可能会陷入局部最优解
+     
+     ）
+     
      
 
 2. **曲线回归**
@@ -927,76 +931,96 @@ Booting算法
 
 ### 预测与评价方法
 
-1. 移动平均法(Moving Average)
+####**移动平均法(Moving Average)**
 
-   用于对**平稳序列**进行预测
+用于对**平稳序列**进行预测
 
-   * **SMA(简单移动平均)**
+* **SMA(简单移动平均)**
 
-     **固定跨越期限**内求**平均值**作为预测值
+  **固定跨越期限**内求**平均值**作为预测值
 
-   * **WMA(加权移动平均)**
+* **WMA(加权移动平均)**
 
-     加权移动平均给**固定跨越期限**内的每个变量值以不同的权重
+  加权移动平均给**固定跨越期限**内的每个变量值以不同的权重
 
-   * **EMA(指数移动平均）**
+* **EMA(指数移动平均）**
 
-     ![image-20230720113034098](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113034098.png)
+  ![image-20230720113034098](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113034098.png)
 
-     ![image-20230720113055371](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113055371.png)
+  ![image-20230720113055371](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113055371.png)
 
-     随着权重因子 β 的增大（β增大，表示先前的指数移动平均占比增大），指数移动平均曲线逐渐变得更加平滑，但同时指数移动平均值的实时性（当前值所占的比重减小，对平均值的影响减弱）也随之变弱。
+  随着权重因子 β 的增大（β增大，表示先前的指数移动平均占比增大），指数移动平均曲线逐渐变得更加平滑，但同时指数移动平均值的实时性（当前值所占的比重减小，对平均值的影响减弱）也随之变弱。
 
-     ```python
-     
-     '''
-     指数平均和引入偏差修正公式后的指数平均预测对比
-     '''
-     import matplotlib.pyplot as plt
-     import numpy as np
-     
-     
-     def main():
-         beta = 0.9    #权重系数
-         num_samples = 100   #样本数量
-     
-         # step 1 generate random seed
-         np.random.seed(0)
-         raw_tmp= np.random.randint(32, 38, size=num_samples)
-         x_index = np.arange(num_samples)
-         # raw_tmp = [35, 34, 37, 36, 35, 38, 37, 37, 39, 38, 37]  # temperature
-         print(raw_tmp)
-     
-         # step 2 calculate ema result and do not use correction
-         v_ema = []
-         v_pre = 0
-         for i, t in enumerate(raw_tmp):
-             v_t = beta * v_pre + (1-beta) * t
-             v_ema.append(v_t)    
-             v_pre = v_t   #记录前一个指数移动平均数
-         print("v_mea:", v_ema)
-     
-         # step 3 correct the ema results
-         v_ema_corr = []
-         for i, t in enumerate(v_ema):
-             v_ema_corr.append(t/(1-np.power(beta, i+1)))
-         print("v_ema_corr", v_ema_corr)
-     
-         # step 4 plot ema and correction ema reslut
-         plt.plot(x_index, raw_tmp, label='raw_tmp')  # Plot some data on the (implicit) axes.
-         plt.plot(x_index, v_ema, label='v_ema')  # etc.
-         plt.plot(x_index, v_ema_corr, label='v_ema_corr')
-         plt.xlabel('time')
-         plt.ylabel('T')
-         plt.title("exponential moving average")
-         plt.legend()
-         plt.savefig('./ema.png')
-         plt.show()
-     
-     
-     if __name__ == "__main__":
-         main()
-     ```
+  ```python
+  
+  '''
+  指数平均和引入偏差修正公式后的指数平均预测对比
+  '''
+  import matplotlib.pyplot as plt
+  import numpy as np
+  
+  
+  def main():
+      beta = 0.9    #权重系数
+      num_samples = 100   #样本数量
+  
+      # step 1 generate random seed
+      np.random.seed(0)
+      raw_tmp= np.random.randint(32, 38, size=num_samples)
+      x_index = np.arange(num_samples)
+      # raw_tmp = [35, 34, 37, 36, 35, 38, 37, 37, 39, 38, 37]  # temperature
+      print(raw_tmp)
+  
+      # step 2 calculate ema result and do not use correction
+      v_ema = []
+      v_pre = 0
+      for i, t in enumerate(raw_tmp):
+          v_t = beta * v_pre + (1-beta) * t
+          v_ema.append(v_t)    
+          v_pre = v_t   #记录前一个指数移动平均数
+      print("v_mea:", v_ema)
+  
+      # step 3 correct the ema results
+      v_ema_corr = []
+      for i, t in enumerate(v_ema):
+          v_ema_corr.append(t/(1-np.power(beta, i+1)))
+      print("v_ema_corr", v_ema_corr)
+  
+      # step 4 plot ema and correction ema reslut
+      plt.plot(x_index, raw_tmp, label='raw_tmp')  # Plot some data on the (implicit) axes.
+      plt.plot(x_index, v_ema, label='v_ema')  # etc.
+      plt.plot(x_index, v_ema_corr, label='v_ema_corr')
+      plt.xlabel('time')
+      plt.ylabel('T')
+      plt.title("exponential moving average")
+      plt.legend()
+      plt.savefig('./ema.png')
+      plt.show()
+  
+  
+  if __name__ == "__main__":
+      main()
+  ```
+
+####熵权法 
+
+算法步骤：
+
+1. **数据归一化**
+
+   ![image-20230724180734479](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724180734479.png)
+
+2. **计算第j项指标下第i个方案的指标值比重**
+
+   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181012250.png" alt="image-20230724181012250" style="zoom: 80%;" />
+
+3. **计算第j项指标的信息熵**
+
+   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181146911.png" alt="image-20230724181146911" style="zoom:80%;" />
+
+4. **计算各指标的权重**
+
+   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181245080.png" alt="image-20230724181245080" style="zoom:80%;" />
 
 ### 仿真方法
 
@@ -1009,3 +1033,4 @@ Booting算法
    * 取舍采样（rejection sampling）
    * 马尔科夫链MC采样 
 
+2. 元胞自动机
