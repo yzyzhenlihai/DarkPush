@@ -557,6 +557,10 @@ Python不允许Tab键和空格混合使用
 
 p=list.index(value)    获得某个元素的下标
 
+
+
+
+
 ## Python方法
 
 1. **类实例方法**
@@ -758,6 +762,20 @@ plt.show()
 
 ```
 
+## 数学建模
+
+```python
+copy.deepcopy()   #深拷贝一个矩阵
+random.gauss(miu,sigma)    #返回指定数学期望和标准差的高斯分布随机数
+enumrate( 列表 )函数       #将列表组合为一个索引序列，同时列出数据下标和数据，一般用在 for 循环当中。
+#numpy中比较两个矩阵是否相等
+not(cell==cell_temp).all()     #.all()所有元素相同返回True   .any()任意一个元素相同返回True
+#Matplotlib imshow() 方法
+plt.imshow(cell)  #imshow() 函数可用于绘制矩阵、热力图、地图等。
+#在pause函数运行前，图形将会更新并显示，在等待期间事件循环会一直运行，直到暂停时间interval秒后结束。
+plt.pause(interval)  #interval表示秒数，类型为整数
+```
+
 
 
 ##网络爬虫
@@ -871,7 +889,6 @@ else:
 为了实现更高级的功能，需要深入一层的配置，原始的urlopen(也是个Opener)方法已经不适用了，需要构建新的Opener对象来发起请求.。**利用 Handler类来构建Opener类**
 
 ####HTTPBasicAuthHandler类
-
 用来处理链接的认证问题
 
 ```python
@@ -902,7 +919,6 @@ except error.URLError as e:
 
 
 ####HTTPCookieProcessor类
-
 用于处理Cookie
 
 ```python
@@ -938,7 +954,6 @@ else:
 
 
 ####robotparser模块
-
 可以用于分析robot.txt文件判断网页是否可以抓取
 
 ```python
@@ -1019,14 +1034,22 @@ POST()——提交数据给指定的服务器处理
 
 
 
-
+**DHCP**（Dynamic Host Configuration Protocol，动态主机配置协议）通常被用于局域网环境，主要作用是集中的管理、分配IP地址，使client动态的获得IP地址、Gateway地址、DNS服务器地址等信息，并能够提升地址的使用率。
 
 
 
 git pull
 
-add .
+add . / add 文件名    //提交到缓冲区
 
-git commit
+git commit -m  "备注"    //提交到本地仓库
 
 git push
+
+git log   查看提交日志
+
+git config --list   //查看git配置
+
+git config user.name 
+
+git config user.email

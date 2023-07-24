@@ -2,6 +2,8 @@
 
 
 
+
+
 ## 异或运算
 
 a^= b相当于a=a^b，将十进制数字转化为二进制进行运算，相同为0，相异为1，0和任何数异或运算都是原来的那个数。
@@ -724,4 +726,286 @@ void createArrange(int k,int n){//k是数组的位置，n是数的个数
 
    ​					浮点是编码就是增加或减少一个小随机数
 
-  
+  ```python
+#解决函数求极值问题
+# 遗传算法
+import numpy as np
+
+DNA_SIZE=8   #编码的位数
+POP_SIZE=200 #种族的个数
+CROSSVER_RATE=0.9   #交叉的概率
+MUTATION_RATE=0.01   #变异的概率
+N_GENERATIONS=5000  #迭代的次数
+X_BOUND=[-3,3]  # x的取值范围
+Y_BOUND=[-3,3]  # y的取值范围
+
+def F(x,y):
+    return (x+y)**2+np.sin(y)
+
+# 得到最大适应度
+def get_fitness(pop):
+    x,y=translateDNA(pop)
+    pred=F(x,y)#获得函数值
+    return (pred-np.min(pred))+1e-3   #加上个较小值，防止适应度小于零
+#将每条二进制编码的基因投影到定义域中
+def translateDNA(pop):
+    '''
+    解码
+    :param pop: 种群矩阵，一行表示一个二进制编码的个体（可能解），行数为种群中个体数目
+    :return: 返回的x,y 是一个行 为种群大小 列为 1 的矩阵 每一个值代表[-3,3]上x,y的可能取值（十进制数）
+    '''
+    x_pop=pop[:,1::2]  # pop中的奇数列表示x   对每一个染色体，从奇数列位x，从1开始
+    y_pop=pop[:,0::2]  # pop中的偶数列表示y
+    #dot函数，获得两个数的乘积   arrange()生成范围内的数
+    #-1表示逆序遍历列表
+    x=x_pop.dot(2**np.arange(DNA_SIZE)[::-1])/float(2**DNA_SIZE-1)*(X_BOUND[1]-X_BOUND[0])+X_BOUND[0]
+    y=y_pop.dot(2**np.arange(DNA_SIZE)[::-1])/float(2**DNA_SIZE-1)*(Y_BOUND[1]-Y_BOUND[0])+Y_BOUND[0]
+    return x,y
+
+# population_matrix = np.random.randint(2, size=(POP_SIZE, DNA_SIZE * 2))
+# print(len(translateDNA(population_matrix)[0]))
+
+# 交叉、变异
+def crossover_and_mutation(pop,CROSSVER_RATE=0.8):
+    #定义新的种族
+    new_pop=[]
+    #对每一挑染色体都进行交叉或变异
+    for father in pop:    # 遍历种群中的每一个个体，将该个体作为父亲
+        child=father      # 孩子先得到父亲的全部基因（代表一个个体的一个二进制0，1串）
+        if np.random.rand() <CROSSVER_RATE:  #产生子代时不是必然发生交叉，而是以一定的概率发生交叉
+            mother=pop[np.random.randint(POP_SIZE)]  # 在种群中选择另一个个体作为母亲
+            cross_points=np.random.randint(low=0,high=DNA_SIZE*2)  #随机产生交叉的点 0-15
+            child[cross_points:]=mother[cross_points:]   #母亲交叉点往后全部给孩子
+        mutation(child)
+        new_pop.append(child)
+    return new_pop
+
+def mutation(child,MUTATION_RATE=0.1):
+    if np.random.rand()<MUTATION_RATE:
+        mutate_points=np.random.randint(0,DNA_SIZE*2)  # 随机产生一个实数，代表要变异基因的位置
+        child[mutate_points]=child[mutate_points]^1    # 和1异或  将变异点位置的二进制反转
+
+def select(pop,fitness):   # 自然选择，优胜劣汰
+    #在两百条基因中中随机选出200条，replace=true表示可以有重复，p是每个元素采样的概率，根据适应度所占总适应度得到比例
+    #200个中随机一个染色体
+    idx=np.random.choice(np.arange(POP_SIZE),size=POP_SIZE,replace=True,p=(fitness)/fitness.sum())
+    return pop[idx]
+
+def print_info(pop):
+    fitness=get_fitness(pop)
+    max_fitness_index=np.argmax(fitness)#返回列表中最大值得索引值
+    # print('此时种群',pop)
+    # print('max_fitness:',fitness[max_fitness_index])
+    x,y=translateDNA(pop)
+    # print('最优基因型：',pop[max_fitness_index])
+    # print('(x,y):',x[max_fitness_index],y[max_fitness_index])
+    print('max_fitness:%s,函数最大值:%s'%(fitness[max_fitness_index],F(x[max_fitness_index],y[max_fitness_index])))
+
+if __name__=='__main__':
+    #获得200条长度为16的二进制编码，x,y各占8位
+    pop=np.random.randint(2,size=(POP_SIZE,DNA_SIZE*2))
+    for i in range(N_GENERATIONS):
+        #x,y=translateDNA(pop)
+        pop=np.array(crossover_and_mutation(pop))  # 交叉变异获得新的种群
+        fitness=get_fitness(pop)  # 得到适应度
+        pop=select(pop,fitness)   # 优胜劣汰
+        if(i%100==0):
+            print('第%s次迭代:'%i)
+            print_info(pop)
+    print_info(pop)
+
+  ```
+
+
+
+## 数学建模算法
+
+梯度下降算法
+
+ 决策树模型
+
+梯度提升决策树算法GBDT
+
+随机森林
+
+集成学习思想
+
+正则项函数
+
+非线性多目标规划模型
+
+强监督学习模型
+
+Booting算法
+
+多项式拟合
+
+加法模型
+
+###回归算法
+
+1. **线性回归**
+
+   * **利用梯度下降法求解**
+
+     ​	y=wx+b   (w,b都是需要求解的变量)
+
+     1. 定义损失函数
+     2. 选择起始点 （假设令w=0，b=0）
+     3. 计算损失函数的梯度  （分别计算关于w和b的偏导数） 
+     4. 按照学习率前进   （按照学习率重新获得新的w和b的值）
+     5. 求解当前y的均方误差和上一次的均方误差，如果足够接近则表示已经获得相对正确的值
+
+     ![image-20230722215652804](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230722215652804.png)
+
+     <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230722215559468.png" alt="image-20230722215559468" style="zoom: 50%;" />
+
+     ```python
+     import numpy as np
+     import pandas as pd
+     from matplotlib import pyplot as plt
+     #线性回归利用梯度下降求解
+     path = 'D:\\学习\\数学建模\\LinearRegressionTest_data.txt'
+     data = pd.read_csv(path, header=None)
+     plt.scatter(data[:][0], data[:][1], marker='+')
+     data = np.array(data)
+     m = data.shape[0]  #获得数组的行数   shape[1]可以获得数组的列数
+     theta = np.array([0, 0])    #初始化两个θ的值
+     data = np.hstack([np.ones([m, 1]), data])   #将参数的元组水平方向叠加，相当于在所有数据前都加上了 1
+     y = data[:,2]  #获得y
+     data = data[:,:2]     #获得前面两列的数据
+     
+     #损失函数
+     def cost_function(data, theta, y):
+         cost = np.sum((data.dot(theta) - y) ** 2)    #将data和theta两个矩阵相乘
+         return cost / (2 * m)
+     
+     #求得梯度
+     def gradient(data, theta, y):
+         grad = np.empty(len(theta))   #创建未初始化的数组
+         grad[0] = np.sum(data.dot(theta) - y)
+         for i in range(1, len(theta)):
+             grad[i] = (data.dot(theta) - y).dot(data[:, i])
+         return grad
+     
+     #梯度下降法
+     def gradient_descent(data, theta, y, eta):
+         while True:
+             last_theta = theta
+             grad = gradient(data, theta, y)
+             theta = theta - eta * grad
+             print(theta)
+             if abs(cost_function(data, last_theta, y) - cost_function(data, theta, y)) < 1e-15:
+                 break
+         return theta
+     
+     
+     res = gradient_descent(data, theta, y, 0.00001)
+     X = np.arange(3, 25)
+     Y = res[0] + res[1] * X
+     plt.plot(X, Y, color='r')
+     plt.show()
+     ```
+
+   * **最小二乘法**
+
+     
+
+2. **曲线回归**
+
+3. **决策树回归**
+
+   与分类树用基尼指数最小原则不同，对回归树用平方误差最小化准则
+
+4. **随机森林回归**
+
+5. **梯度提升树回归**
+
+6. **保序回归**
+
+7. **L1/2稀疏迭代回归**
+
+### 预测与评价方法
+
+1. 移动平均法(Moving Average)
+
+   用于对**平稳序列**进行预测
+
+   * **SMA(简单移动平均)**
+
+     **固定跨越期限**内求**平均值**作为预测值
+
+   * **WMA(加权移动平均)**
+
+     加权移动平均给**固定跨越期限**内的每个变量值以不同的权重
+
+   * **EMA(指数移动平均）**
+
+     ![image-20230720113034098](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113034098.png)
+
+     ![image-20230720113055371](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113055371.png)
+
+     随着权重因子 β 的增大（β增大，表示先前的指数移动平均占比增大），指数移动平均曲线逐渐变得更加平滑，但同时指数移动平均值的实时性（当前值所占的比重减小，对平均值的影响减弱）也随之变弱。
+
+     ```python
+     
+     '''
+     指数平均和引入偏差修正公式后的指数平均预测对比
+     '''
+     import matplotlib.pyplot as plt
+     import numpy as np
+     
+     
+     def main():
+         beta = 0.9    #权重系数
+         num_samples = 100   #样本数量
+     
+         # step 1 generate random seed
+         np.random.seed(0)
+         raw_tmp= np.random.randint(32, 38, size=num_samples)
+         x_index = np.arange(num_samples)
+         # raw_tmp = [35, 34, 37, 36, 35, 38, 37, 37, 39, 38, 37]  # temperature
+         print(raw_tmp)
+     
+         # step 2 calculate ema result and do not use correction
+         v_ema = []
+         v_pre = 0
+         for i, t in enumerate(raw_tmp):
+             v_t = beta * v_pre + (1-beta) * t
+             v_ema.append(v_t)    
+             v_pre = v_t   #记录前一个指数移动平均数
+         print("v_mea:", v_ema)
+     
+         # step 3 correct the ema results
+         v_ema_corr = []
+         for i, t in enumerate(v_ema):
+             v_ema_corr.append(t/(1-np.power(beta, i+1)))
+         print("v_ema_corr", v_ema_corr)
+     
+         # step 4 plot ema and correction ema reslut
+         plt.plot(x_index, raw_tmp, label='raw_tmp')  # Plot some data on the (implicit) axes.
+         plt.plot(x_index, v_ema, label='v_ema')  # etc.
+         plt.plot(x_index, v_ema_corr, label='v_ema_corr')
+         plt.xlabel('time')
+         plt.ylabel('T')
+         plt.title("exponential moving average")
+         plt.legend()
+         plt.savefig('./ema.png')
+         plt.show()
+     
+     
+     if __name__ == "__main__":
+         main()
+     ```
+
+### 仿真方法
+
+1. Monte Carlo Method（蒙特卡洛法）
+
+   蒙特卡罗方法又称统计模拟法、**随机抽样技术**，是一种随机模拟方法，多用于求解复杂的多维积分问题
+
+   每次输入都随机选择输入值。由于每个输入很多时候本身就是一个**估计区间**(可能是均匀分布，也可能是正态分布)，因此计算机模型会随机选取每个输入的该区间内的任意值，通过大量成千上万甚至百万次的模拟次数，最终得出一个累计概率分布图
+   
+   * 取舍采样（rejection sampling）
+   * 马尔科夫链MC采样 
+
