@@ -762,6 +762,47 @@ plt.show()
 
 ```
 
+## pandas库
+
+```python
+#Series 类似表格中的一个列（column），类似于一维数组，可以保存任何数据类型
+pandas.Series( data, index, dtype, name, copy) #dtype指定数据类型,默认会自己判断
+
+#利用字典创建Series
+sites = {1: "Google", 2: "Runoob", 3: "Wiki"}
+myvar = pd.Series(sites)
+
+#DataFrame 是一个表格型的数据结构，它可以被看做由 Series 组成的字典（共同用一个索引）
+pandas.DataFrame( data, index, columns, dtype, copy)
+
+#返回指定行表格数据
+df.iloc[0]   #返回第1行数据
+
+#获得DataFrame数据类型的行数和列数
+df.shape[0]  #获得行数
+df.shape[1]  #获得列数
+
+#统计列表中每个元素的个数
+result=pd.value_counts(num)
+```
+
+## numpy库
+
+```python
+#产生一定范围的矩阵
+x=np.arange(-10,10,1)   
+#产生一个全为0的矩阵
+cell=np.zeros((length,width),int)
+#将列表转化为矩阵类型
+a=np.array('列表')
+```
+
+
+
+
+
+
+
 ## 数学建模
 
 ```python
