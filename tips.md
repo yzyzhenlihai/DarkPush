@@ -557,6 +557,8 @@ Python不允许Tab键和空格混合使用
 
 p=list.index(value)    获得某个元素的下标
 
+**zip()**  函数用于将**可迭代**的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些**元组组成的列表**。
+
 
 
 
@@ -725,16 +727,23 @@ y= x**2
 
 Ix=[random.randrange(0,100) for i in range(100)]
 Iy=[random.randrange(0,100) for i in range(100)]
+#：plt.subplots（）返回 类似的 [ [figure], [axes1, axes2…] ]类似的东西
 fig,axes=plt.subplots(2,3,figsize = (15, 10))  #这个参数默认的情况下是1
+
 #通过索引访问不同的子图
 axes[0][0].plot(x,y,label='抛物线')
 axes[0][0].set_title('抛物线') #设置子图标题
 axes[0][0].set_xlabel('x') #设置横坐标名称
 axes[0][0].set_ylabel('y') #设置纵坐标名称
-axes[0][0].legend(loc='best')
-axes[0][0].set_xlim(0,10) #设置坐标轴范围
-
+#设置图例
+axes[0][0].legend(loc='best'，bbox_tox_anchor=(num1,num2))	#num1控制左右移动，num2控制上下移动  
+#设置坐标轴范围
+axs[0][0].set_xlim(min,max) , axs[0][0].set_ylim(min,max)
+#画散点图
 axes[1][1].scatter(Ix,Iy)
+#设置主标题 fontsize设置字体大小
+plt.suptitle('标题名',fontsize=15)
+plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=0.2)  # 调整子图间距
 plt.show()
 
 ```
@@ -762,6 +771,37 @@ plt.show()
 
 ```
 
+```python
+
+'''
+绘制饼图
+[explode]：默认值为None的可选参数。若非None，则是和x相同长度的数组，用来指定每部分的离心偏移量。	就是突出显示
+[labels]：列表，指定每个饼块的名称，默认值None，为可选参数。
+[colors]：特定字符或数组，指定饼图的颜色，默认值None，为可选参数。
+
+[autopct]：特定字符，指定饼图中数据标签的显示方式，默认值None，为可选参数。	设置数据小数点位数
+[pctdistance]：浮点数，指定显示比例距离圆心的距离。默认值0.6，为可选参数。
+[labeldistance]：浮点数，指定每个扇形对应标签与圆心的距离，默认值1.1，为可选参数。
+[startangle]：浮点数，指定从x轴逆时针旋转饼图的开始角度，默认值None(0度)，为可选参数 
+[radius]：浮点数，指定饼图的半径，默认值1，为可选参数。 
+[textprops]：字典，设置文本对象的字典参数，默认值None，为可选参数。 
+**kwargs：不定长关键字参数，用字典形式设置条形图的其它参数。
+
+'''
+plt.pie(x, [explode], [labels], [colors], [autopct], [pctdistance],  [labeldistance], [startangle], [radius], [textprops], **kwargs)
+
+plt.pie(x=[smoke,no_smoke],labels=['吸烟','不吸烟'],autopct='%.2f%%',colors=["#d5695d", "#5d8ca8"])
+
+#保存图片
+ plt.savefig('相对路径或绝对路径',dpi=300)  #dpi为像素点
+
+
+```
+
+
+
+
+
 ## pandas库
 
 ```python
@@ -773,7 +813,7 @@ sites = {1: "Google", 2: "Runoob", 3: "Wiki"}
 myvar = pd.Series(sites)
 
 #DataFrame 是一个表格型的数据结构，它可以被看做由 Series 组成的字典（共同用一个索引）
-pandas.DataFrame( data, index, columns, dtype, copy)
+pandas.DataFrame(data, index, columns, dtype, copy)
 
 #返回指定行表格数据
 df.iloc[0]   #返回第1行数据
@@ -784,18 +824,130 @@ df.shape[1]  #获得列数
 
 #统计列表中每个元素的个数
 result=pd.value_counts(num)
+
+#获得narrary类型的数据
+a=df.values #获得矩阵类型
+
+#将numpy数组转化为DataFrame类型
+df = pd.DataFrame(arr)
+
+#提取其中部分列并形成新的dataframe对象
+df=df[['城市序号','年商品需求量']]
+
+#修改列名
+df.columns=['城市序号','年商品需求量','X坐标','Y坐标']
+
+#删除某列或某行 
+df.drop([行索引或行名],axis=0,inplace=False)  #axis=0删除行，axis=1删除列.默认inplace=False，原来的数据保持不变
+
+#在删除完某行后，重置索引顺序
+df.reset_index(drop=True)		#drop=True表示重置索引，不把索引添加为新的列
+
+#两个表格连接操作
+df3 = pd.merge(df1, df2, on='key')#类似与关系数据库sql的连接操作
+df3 = pd.concat([df1,df2],axis=1) #axis=1表示水平方向堆叠
+
+#对表格的数据进行分段
+'对年龄进行分段后构建哑变量'
+bins=[0,14,35,65,200]#年龄范围
+label4=['儿童','青年人','中年人','老年人']
+ages=pd.cut(df['年龄'],bins=bins,labels=label4,right=True)#表示分组右边闭合，right=False表示分组左边闭合
+
+#添加新列
+df['患高血压情况']=high_blood_judge
+
+#按某列条件筛选出对应行
+#可以定义匿名函数，也可以自定义函数
+df_young = df[df['年龄'].map(lambda x: x >= age_min[k] and x < age_max[k])]
+
+#统计列中满足条件的数量
+#sum()前面的返回值是一列值为False和True的列，将一列求和就得到满足条件的数量
+(df_young[labels2[i]] >= optional_max[i]).sum() 
+
+#创建多分类变量的哑变量
+pd.get_dummies(df['所属职业分类'])
 ```
 
 ## numpy库
 
 ```python
 #产生一定范围的矩阵
-x=np.arange(-10,10,1)   
+#linspace能够精确控制终止值终值，而arange能够更直接地控制序列中值之间的增量
+x=np.arange(-10,10,1) 
+x=np.linspace(start=0,stop=10,num=5,dtype=int)
 #产生一个全为0的矩阵
 cell=np.zeros((length,width),int)
+
 #将列表转化为矩阵类型
 a=np.array('列表')
+np.array(df,float)  #将DataFrame类型转化为numpy数组
+
+#np.r_：是按行连接两个矩阵，就是把两矩阵上下相加，要求列数相等，类似于pandas中的concat()。
+#np.c_：是按列连接两个矩阵，就是把两矩阵左右相加，要求行数相等，类似于pandas中的merge()。
+#使用该函数时，两个连接的矩阵维数要相同
+A = c_[zeros(4),diag([0.025,0.015,0.055,0.026])]
+
+#numpy.diag(v,k)
+#如果v是二维数组，返回k位置的对角线。
+#如果v是一维数组，返回一个v作为k位置对角线的二维数组。
+#k>0返回对角线上方，k<0返回对角线下方
+np.diag([0.025,0.015,0.055,0.026])
+
+#将numpy产生的矩阵重新塑造
+array3 = np.arange(8).reshape(4, 2)
+arr.reshape(m,-1) #改变维度为m行、d列 （-1表示列数自动计算，d= a*b /m ）
+arr.reshape(-1,m) #改变维度为d行、m列 （-1表示行数自动计算，d= a*b /m ）
+
+#求矩阵各个维度的最小/最大值
+a.min()#全部元素中的最小值
+a.min(axis=0)#每列的最小值
+a.min(axis=1)#每行的最小值
+
+#统计矩阵非零的个数
+np.count_nonzero(a,axis=0) #a为数组名，axis用法与求矩阵最大最小值相同
+
+#对矩阵进行排序  
+np.argsort(x) #返回从小到大的索引值
+
+#对两个矩阵进行连接
+np.concatenate((np.eye(6), np.eye(6)),axis=1)#axis=1表示行拼接
+res = np.hstack((arr1, arr2))      			 #np.hstack将参数元组的元素数组按水平方向进行叠加
 ```
+
+##matplotlib库
+
+## scipy库
+
+```python
+'''
+fun: 目标函数: fun(x, *args) x 是形状为 (n,) 的一维数组 (n 是自变量的数量)
+
+x0: 初值, 形状 (n，) 的 ndarray
+
+method: 求解器的类型，如果未给出，有约束时则选择 'SLSQP'。
+
+constraints: 求解器 SLSQP 的约束被定义为字典的列表，字典用到的字段主要有：
+
+'type': str: 约束类型：“eq” 表示等式，“ineq” 表示不等式 (SLSQP 的不等式约束是 f ( x ) ≥ 0 f(x)\geq 0f(x)≥0 的形式)
+'fun': 可调用的函数或匿名函数：定义约束的函数
+bounds: 变量界限
+
+'''
+#求解非线性规划函数
+res = scipy.optimize.minimize(fun, x0, args=(), method=None, jac=None, hess=None, hessp=None, bounds=None, constraints=(), tol=None, callback=None, options=None)
+
+#显著性检验
+#输出结果第一个值为pearsonr相关系数
+#第二个为p-value，所以这里Guba列和Value值是显著相关的
+stats.pearsonr(df['Guba'],df['Value'])
+
+```
+
+
+
+
+
+
 
 
 
