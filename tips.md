@@ -498,7 +498,11 @@ public class java_question2 {
 
 ##GUI(用户图形界面)
 
+# javaweb
 
+正常的cookie只能在一个应用中共享，即一个cookie只能由创建它的应用获得。
+
+cookie.setPath(“/”)
 
 
 
@@ -559,7 +563,7 @@ p=list.index(value)    获得某个元素的下标
 
 **zip()**  函数用于将**可迭代**的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些**元组组成的列表**。
 
-
+from collections import Counter     **Counter**用于统计可迭代对象中元素出现的次数，返回一个字典
 
 
 
@@ -720,8 +724,7 @@ json.load("文件对象")                      //加载json中的信息到内存
 
 ```python
 #二维图
-plt.rcParams['font.sans-serif'] = 'SimHei'  #正确显示中文
-plt.rcParams['axes.unicode_minus'] = False ## 设置正常显示符号
+
 x=np.arange(1,10,1)
 y= x**2
 
@@ -795,10 +798,107 @@ plt.pie(x=[smoke,no_smoke],labels=['吸烟','不吸烟'],autopct='%.2f%%',colors
 #保存图片
  plt.savefig('相对路径或绝对路径',dpi=300)  #dpi为像素点
 
+'''
+绘制箱型图
+x：指定要绘制箱线图的数据，可以是一组数据也可以是多组数据；
+notch：是否以凹口的形式展现箱线图，默认非凹口；
+sym：指定异常点的形状，默认为蓝色的+号显示；
+vert：是否需要将箱线图垂直摆放，默认垂直摆放；
+whis：指定上下须与上下四分位的距离，默认为1.5倍的四分位差；
+positions：指定箱线图的位置，默认为range(1, N+1)，N为箱线图的数量；
+widths：指定箱线图的宽度，默认为0.5；
+patch_artist：是否填充箱体的颜色，默认为False；
+meanline：是否用线的形式表示均值，默认用点来表示；
+showmeans：是否显示均值，默认不显示；
+showcaps：是否显示箱线图顶端和末端的两条线，默认显示；
+showbox：是否显示箱线图的箱体，默认显示；
+showfliers：是否显示异常值，默认显示；
+boxprops：设置箱体的属性，如边框色，填充色等；
+labels：为箱线图添加标签，类似于图例的作用；
+filerprops：设置异常值的属性，如异常点的形状、大小、填充色等；
+medianprops：设置中位数的属性，如线的类型、粗细等；
+meanprops：设置均值的属性，如点的大小、颜色等；
+capprops：设置箱线图顶端和末端线条的属性，如颜色、粗细等；
+whiskerprops：设置须的属性，如颜色、粗细、线的类型等；
+manage_ticks：是否自适应标签位置，默认为True；
+autorange：是否自动调整范围，默认为False；
+'''
+axes[0].boxplot(df['每月酱类食用量（g）'])
 
+'''
+聚类谱系图绘制
+from scipy.cluster.hierarchy import linkage, dendrogram
+Z：层次聚类的结果，即通过scipy.cluster.hierarchy.linkage()函数计算得到的链接矩阵。
+
+p：要显示的截取高度（y轴的阈值），可以用于确定划分群集的横线位置。
+
+truncate_mode：指定截取模式。默认为None，表示不截取，可以选择 'lastp' 或 'mlab' 来截取显示。
+
+labels：数据点的标签，以列表形式提供。
+
+leaf_font_size：叶节点的字体大小。
+
+leaf_rotation：叶节点的旋转角度。
+
+show_leaf_counts：是否显示叶节点的数量。
+
+show_contracted：是否显示合并的群集。
+
+color_threshold：显示不同颜色的阈值，用于将不同群集算法聚类为不同颜色。
+
+above_threshold_color：超过阈值的线段颜色。
+
+orientation：图形的方向，可以选择 'top'、'bottom'、'left' 或 'right'。
+
+'''
 ```
 
 
+
+## 数据分析
+
+```python
+#修改指定列名,利用inplace=True可直接在原数据框内改动
+df.rename(columns={'购药时间':'销售时间'},inplace=True)
+
+#判断记录是否有重复值
+#subset:以哪几列作为基准列，判断是否重复，如果不写则默认所有列都要重复才算
+#keep: 保留哪一个，fist-保留首次出现的，last-保留最后出现的，False-重复的一个都不保留，默认为first
+#inplace: 是否进行替换，最好选择False，保留原始数据，默认也是False
+
+df.duplicated(subset=['列名'],keep='first',inplace=True)   #返回布尔型数据，告诉重复值的位置
+df[df.duplicated()==True]#打印重复值
+df.drop_duplicates(inplace=True)#删除重复行
+df.reset_index()			#删除完行后需要重置索引
+
+#缺失值处理
+#分析表格数据，可以获得列的空值情况
+df.info()
+print(df.isnull().any())  #可以获得对应列是否有空值，df.isnull()返回所有单元格内是否为空的情况
+#1.删除缺失值
+#dropna(axis,subset,how,thresh,inplace)
+#axis: 删除行还是列，行是0或index,列是1或column，默认是行
+#subst: 删除某几列的缺失值，可选，默认为所有列
+#how: any or all，any表明只要出现1个就删除，all表示所有列均为na才删
+#thresh: 缺失值的数量标准，达到这个阈值才会删除
+#inplace: 是否替换
+df.dropna(how='any', axis=0,inplace=True)#表示只要有一列有空就删除
+
+#2.填充缺失值
+#fillna(value=None, method=None, axis=None, inplace=False, limit=None, downcast=None, **kwargs)
+#value：固定值，可以用固定数字、均值、中位数、众数等，此外还可以用字典，series等形式数据；
+#method:填充方法，有ffill（用前一个填充）和bfill（用后一个填充）两
+#axis: 填充方向，默认0和index，还可以填1和columns
+#inplace:在原有数据上直接修改
+#limit:填充个数，如1，每列只填充1个缺失值
+data1.fillna({"订单号": "下次再补", "数量": "估计"})#通过传入字典的方式对不同列填充不同的值
+
+
+
+#异常值处理
+df.describe()   #描述一列的统计信息，比如均值，方差，四分位点
+sales=sales[(sales['销售数量']>0)&(sales['应收金额']>0)&(sales['实收金额']>0)]#筛选对应行
+```
 
 
 
@@ -818,6 +918,10 @@ pandas.DataFrame(data, index, columns, dtype, copy)
 #返回指定行表格数据
 df.iloc[0]   #返回第1行数据
 
+#显示表格的前几行或后几行
+df.head(10)
+df.tail(2)
+
 #获得DataFrame数据类型的行数和列数
 df.shape[0]  #获得行数
 df.shape[1]  #获得列数
@@ -836,9 +940,12 @@ df=df[['城市序号','年商品需求量']]
 
 #修改列名
 df.columns=['城市序号','年商品需求量','X坐标','Y坐标']
+temp.name='判断'  #修改series类型的列名
+df.rename(column={'a':'A','b':'B'}) #rename中column传入的是一个map类型
 
 #删除某列或某行 
 df.drop([行索引或行名],axis=0,inplace=False)  #axis=0删除行，axis=1删除列.默认inplace=False，原来的数据保持不变
+del df['列名']
 
 #在删除完某行后，重置索引顺序
 df.reset_index(drop=True)		#drop=True表示重置索引，不把索引添加为新的列
@@ -866,6 +973,17 @@ df_young = df[df['年龄'].map(lambda x: x >= age_min[k] and x < age_max[k])]
 
 #创建多分类变量的哑变量
 pd.get_dummies(df['所属职业分类'])
+
+#替换某值
+data["gender"] = data["gender"].map({"男":1, "女":0})  #map适用字典进行映射，将男替换成1，女替换成0
+
+#创建日期
+dates=pd.date_range('20231030',periods=6) #periods指定产生日期的天数，字符串指定起始日期，返回日期列表year-month-day
+
+#按某列的值进行排序
+df=df.sort_values(by='列名',ascending=False) #ascending排序方式，True升序，False降序
+#按索引进行排序
+df=df.sort_index(ascending=True,axis=0)#axis=0对行索引排序
 ```
 
 ## numpy库
