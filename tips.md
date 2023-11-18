@@ -504,7 +504,25 @@ public class java_question2 {
 
 cookie.setPath(“/”)
 
+**获得请求消息行的方法**
 
+request.getContextPath();获得URL中属于web应用程序的路径，例如  /chapter05 （chapter05为web应用的根目录）
+
+request.getRequestURI()//获得主机号和端口之后，参数部分之前的部分
+
+ request.getServletPath()//获取Servlet的名称或Servlet所映射的路径
+
+**获得请求消息头**
+
+request.getAttribute("")；//在获得属性值之后需要进行类型的强制转换，否则编译会不通过
+
+**获取网页连接信息**
+
+request.getRemoteAddr()//获得本机IP地址
+
+
+
+**<jsp: include>和include指令的区别**：< jsp:include>标签是动态引入， < jsp:include>标签涉及到的2个JSP页面会被翻译成2个servlet，这2个servlet的内容在执行时进行合并。而include指令是静态引入，涉及到的2个JSP页面会被翻译成一个servlet，其内容是在源文件级别进行合并。
 
 # Python
 
