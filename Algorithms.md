@@ -56,6 +56,29 @@ b[i][j] = a[i][j] − a[i − 1][j] − a[i][j − 1] + a[i −1 ][j − 1]//差
 
 
 
+## 二分
+
+```c++
+/*
+对于两个模板，首先寻找边界，最后如果check(mid)中边界的变化是r=mid，那么在计算mid的时候不用加1，如果check(mid)边界的变化是l=mid,那么在计算mid的时候需要加1
+*/
+//模板一，用于查找左边界，大于等于目标值的第一个数
+int l=0,r=n-1;
+while(l<r){
+	int mid=l+r>>1;
+	if(check(mid))r=mid;
+	else l=mid+1;
+} 
+//模板二，用于查找右边界，小于等于目标值的最后一个数
+int l=0,r=n-1;
+while(l<r){
+	int mid=l+r+1>>1;
+	if(check(mid))l=mid;
+	else r=mid-1;
+} 
+
+```
+
 
 
 
