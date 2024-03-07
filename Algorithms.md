@@ -95,6 +95,16 @@ while(l<r){
 
 其中pi都是质数，N可以拆成多个**质数幂**相乘，然后把约数之和的每一项拆开，就可以发现是每一种约数（就是从每个括号中选一个，并相乘，就可以得到一种情况的约数），所以约数的个数就是每个括号中**可以选择的数量**的乘积
 
+
+
+**排序不等式：**
+
+![img](file:///C:\Users\86159\AppData\Roaming\Tencent\Users\1826203343\QQ\WinTemp\RichOle\25F8E0YB@F8CL[B@K2A0FDR.png)
+
+总的来说就是，升序和降序的序列，对应位相乘后求和能得到最小值，同为升序或者同为降序能得到和的最大值
+
+
+
 ## 递归
 
 求解等比数列：这是一种常规的求解方式，或者利用公式法
@@ -168,7 +178,7 @@ a%j==0的判断中j一定是质数，如果j是个合数，那么它能分解成
 
 ## 筛素数
 
-**埃及筛：**时间复杂度O(nlogn*logn)，思想就是在筛选的时候，只把**质数的倍数**删掉，因为每个合数都能够由**多个质数**或者**两个质数**或者**一个质数一个合数**相乘，不像传统筛法，把每个数的倍数筛掉，这样会造成筛的重复，时间复杂度高
+**埃氏筛：**时间复杂度O(nlogn*logn)，思想就是在筛选的时候，只把**质数的倍数**删掉，因为每个合数都能够由**多个质数**或者**两个质数**或者**一个质数一个合数**相乘，不像传统筛法，把每个数的倍数筛掉，这样会造成筛的重复，时间复杂度高
 
 ```c++
 const int N=1e6+10;
@@ -177,15 +187,24 @@ int st[N];//判断是否为质数
 int cnt;//存质数的个数
 for(int i=2;i<=n;i++){
         //没被筛掉
-        if(!st[i])prime[cnt++]=i;
-        //埃及筛，筛掉质数的合数
-        for(int j=i+i;j<=n;j+=i){
-            st[j]=true;
+        if(!st[i]){
+            prime[cnt++]=i;
+           for(int j=i+i;j<=n;j+=i){
+               st[j]=true;
+           }
         }
+        
     }
 ```
 
 **线性筛：**每个合数只被最小质因子筛一次，感觉还不是很理解，先记一下结论
+
+if(i%primes[j]==0) break; 
+
+//当发现primes[j]是i最小质因子的时候,如果再继续进行的话，
+//我们就把 prime[j+1]*i 这个数筛掉了,虽然这个数也是合数，
+//但是我们筛掉它的时候并不是用它的最小质因数筛掉的，而是利用 prime[j+1] 和 i 把它删掉的
+//这个数的最小质因数其实是prime[j],如果我们不在这里退出循环的话，我们会发现有些数是被重复删除了的。
 
 ```c++
  for(int i=2;i<=n;i++){
@@ -273,7 +292,7 @@ void insert(int x){
     head=idx;
     idx++;
 }
-//删除第k个数据,起始删除并没有真正的删除，而是通过修改ne数组（指针指向）来达到删除的目的
+//删除第k个数据,其实删除并没有真正的删除，而是通过修改ne数组（指针指向）来达到删除的目的
 void del(int k){
     ne[k]=ne[ne[k]];
 }
@@ -318,11 +337,391 @@ ULL get(int l,int r){
 
 
 
+##单调队列
+
+单调队列一般适用于求解一段区间内的最大或最小值
+
+```c++
+//模拟队列
+int q[N];
+int hh=0,tt=-1;
+q[++tt]=x;//入队
+hh++;//出队
+q[hh];//访问队头元素
+hh<=tt;//表示队列不为空
+//模拟栈
+int stk[N];
+int tt=-1;
+stk[++tt]=x;//压栈
+tt--;//出栈
+stk[tt];//访问栈顶
+tt>=0;//表示栈不为空
+```
+
+## Trie（字典树）
+
+[Trie]([深度解析Trie（字典树）-CSDN博客](https://blog.csdn.net/raelum/article/details/128885107))，又称字典树或前缀树，常用来存储和查询字符串。假定接下来提到的字符串均由小写字母构成，那么Trie将是一棵 26 叉树。   
+
+Trie存二进制数据或存字符串（以下代码为存二进制数）
+
+```c++
+ll a[N];//原始数据
+ll son[M][2];//存Trie树
+int idx;//Trie树结点下标
+//插入Trie树 
+//插入的步骤一般不会有变化，就是可能会增加cnt数组来维护字典树的额外信息，比如说经过某个结点的数的个数或者某个数出现的次数。
+void insert(int x){
+	int p=0;//树指针 
+	for(int i=30;i>=0;i--){
+		int t=(x >> i) & 1;//获得最高位
+		if(!son[p][t]) son[p][t]=++idx;//son[p][t]=0表示根结点没有值为“t”的子结点
+		p=son[p][t];
+	}
+}
+//查询某个数
+//查询就是遍历已经存在的字典树，完成相应的处理，比如说找到最大异或对，或者判断字符串是否已经出现过
+ll query(int x){
+	int p=0;
+	ll res=0;
+	for(int i=30;i>=0;i--){
+		int t=(x>>i)&1;
+		if(son[p][1-t]){
+			res+=(1<<i);
+			p=son[p][1-t];
+		}else{
+			p=son[p][t];
+		}
+	}
+	return res;
+}
+```
+
+## 邻接表
+
+
+
+```c++
+int h[N],e[M],w[M],ne[M],idx;//idx为边的序号
+void add(int a, int b, int c)   // 添加有向边 u->v, 权重为weight
+{
+     e[idx] = b,w[idx] = c,ne[idx] = h[a],h[a] = idx ++;
+    
+}
+
+```
 
 
 
 
 
+## BFS
+
+边权为1的求最短路问题可以用bfs做，因为是一层一层搜的，所以能找到最短路（第一次访问到的就是最短的）
+
+```c++
+const int N=110;
+int g[N][N];//存图 
+int d[N][N];//存每个点到源点的距离 
+int n,m;
+typedef pair<int,int> PII;
+queue<PII> que;
+int bfs(){
+	int dx[]={-1,1,0,0},dy[]={0,0,-1,1};//上下左右
+	que.push(make_pair(0,0));
+	memset(d,-1,sizeof d);//初始化距离为-1，表示未经过
+	d[0][0]=0;// 初始点为0
+	while(!que.empty()){
+		PII tmp=que.front();//取出队列中的第一个元素 
+		que.pop();
+		for(int i=0;i<4;i++){
+			int x=tmp.first+dx[i],y=tmp.second+dy[i];
+			if(x>=0 && x<n && y>=0 && y<m && d[x][y]==-1 && g[x][y]==0){
+				d[x][y]=d[tmp.first][tmp.second]+1;
+				que.push(make_pair(x,y));
+			}
+		}
+	}
+	return d[n-1][m-1];
+	
+}
+```
+
+**多源bfs**
+
+对于多起点的bfs，可以在一开始将所有起点都加入队列，然后正常进行bfs，就可以得出所有点到起点的最近距离。
+
+这也类似于**多起点的最短路问题**，如果边权不为1，需要利用Dijkstra来做，可以通过构建虚拟源点的方式求解，具体见**最短路笔记**
+
+
+
+## DFS
+
+强调顺序，然后再dfs完回溯后需要**恢复现场**，也就是把有一些标记的点重新清除标记。
+
+```c++
+//全排列代码
+//t表示填充第t个位置
+void dfs(int t){
+	
+	for(int i=1;i<=n;i++){
+		if(!st[i]){
+			st[i]=true;
+			a[t]=i;//在第t位上填上数 
+			dfs(t+1);
+			//恢复现场
+			st[i]=false;
+
+		}
+	}
+}
+```
+
+## 拓扑序列
+
+有向无环图一定存在拓扑序列，通过入度为0来判断该点是否可以加入队列。
+
+
+
+## 最短路
+
+**反向建图：**对于单源求最短路，可以直接使用Dijkstra或者spfa求解即可，对于**多起点单终点**的最短路问题，要计算每个起点到终点的最短距离，可以通过**反向建图**的方式，把起点和终点调换，这样就可以将问题转换为一个起点。
+
+**虚拟源点：**通过建立虚拟源点也可以将多起点转换为从虚拟源点出发的新图。
+
+### Dijkstra
+
+适用于边权都为正数
+
+**朴素版Dijkstra算法**
+
+每次找到一个最小值，都会默认到该点的距离已经被更新至最小，所以用st数组进行标记，这也是Dijkstra算法的特点，利用贪心的思想，每次找到最短距离，就将这个点确定下来，不再更新。
+
+```c++
+const int N=510;
+int g[N][N];
+bool st[N];
+int dist[N];//记录距离 
+int n,m;//n为点的个数，m为边的个数
+int dijkstra(){
+	
+	//初始化距离为最大值 
+	memset(dist,0x3f,sizeof dist); 
+	dist[1]=0;
+	//找到距离的最小值
+	for(int i=0;i<n;i++){
+		int t=-1;
+		for(int j=1;j<=n;j++){
+			if(!st[i] && (t==-1 || dist[t]>dist[j]))t=j;//找到距离的最短点 
+		}
+		st[t]=true; 
+		//更新距离最短点到其他点的最短距离
+		for(int j=1;j<=n;j++){
+			dist[j]=min(dist[j],dist[t]+g[t][j]);
+		}
+	} 
+    //如果是最大值则表示无法到达
+	if(dist[n]==0x3f3f3f3f)return -1;
+	return dist[n];
+}
+
+
+```
+
+**堆优化版Dijkstra算法**
+
+堆优化版本在查找所有距离中的最小值时，使用的是堆，可以降低时间的复杂度。
+
+```c++
+const int N=2e5;
+int n,m;
+int h[N],e[N],ne[N],w[N],idx;
+int dist[N];
+bool st[N];
+//稀疏图用邻接表 
+void add(int a,int b,int c){
+	e[idx]=b,w[idx]=c,ne[idx]=h[a],h[a]=idx++;
+}
+int dijkstra(){
+	memset(dist,0x3f,sizeof dist);
+	dist[1]=0;
+    //用STL自带的优先队列存距离的值
+	priority_queue<PII,vector<PII>,greater<PII> > heap;//优先队列-小根堆 
+	heap.push(make_pair(0,1));//将第一个点加入堆
+	while(!heap.empty()){
+		PII t=heap.top();//获得距离中的最小值 
+		heap.pop();
+		int ver=t.second,distance=t.first;
+		if(st[ver])continue;
+		st[ver]=true;
+        //跟新最短距离
+		for(int i=h[ver];i!=-1;i=ne[i]){
+			int j=e[i];
+			if(dist[j]>distance+w[i]){
+				dist[j]=distance+w[i];
+				heap.push(make_pair(dist[j],j));//将新更新的距离加入堆 
+			}
+		}
+	} 
+	if(dist[n]==0x3f3f3f3f) return -1;
+	return dist[n];
+}
+```
+
+### SPFA
+
+SPFA可以用于有**负权边**的单源最短路问题，时间复杂度为O(nm)，如果有**负权回路**的情况，则不能使用SPFA算法，否则会出现死循环。
+
+因为SPFA是从源点开始，对于有发生松弛的点（就是最短距离发生改变），就会将其加入队列，算法结束的条件是队列为空，如果有负权回路，那么最短距离会永远有发生变化，那么队列中就会一直不为空。
+
+SPFA判断是否存在负环，添加一个cnt数组统计两点之间边的个数，如果数量>=n，则表示一定存在负环。
+
+```c++
+int dist[N];
+bool st[N];//st数组的用法与Dijkstra不同，这里是判断队列中是否会加入重复的点。
+int que[N];
+int spfa(){
+    //初始化距离
+    memset(dist,0x3f,sizeof dist);
+    dist[1]=0;
+    int hh=0,tt=0;
+    que[0]=1;//加入队列
+    st[1]=true;
+    while(hh<=tt){
+        int t=que[hh++];//取出
+        st[t]=false;
+        //更新距离
+        for(int i=h[t];i!=-1;i=ne[i]){
+            int j=e[i];
+            if(dist[j]>dist[t]+w[i]){
+                dist[j]=dist[t]+w[i];
+                //如果没有在队列中就加入队列
+                if(!st[j]){
+                    que[++tt]=j;
+                    st[j]=true;
+                }
+            }
+        }
+    }
+    return dist[n];
+    
+}
+```
+
+
+
+### Floyd
+
+可以处理负权
+
+```c++
+const int N=210;
+int dist[N][N];
+//floyd算法
+void floyd(){
+	for(int i=1;i<=n;i++){
+		for(int j=1;j<=n;j++){
+			for(int k=1;k<=n;k++){
+				dist[i][j]=min(dist[i][j],dist[i][k]+dist[k][j]);
+			}
+		}
+	}
+}
+//dist数组初始化
+for(int i=1;i<=n;i++){
+    for(int j=1;j<=n;j++){
+        if(i==j)dist[i][j]=0;//存在自环直接就删掉
+        else dist[i][j]=INF;//初始化为最大值
+    }
+}
+//因为可能存在负权边的情况，所以当两个点之间的距离无解时，可能距离并不是初始化的正无穷，而是会小一点点。
+//所以用>INF/2来判断是否是无解。
+if(dist[x][y]>INF/2)cout<<"impossible"<<endl; 
+		else cout<<dist[x][y]<<endl;
+```
+
+
+
+## 最小生成树
+
+### prim
+
+时间复杂度为O(n^2)，可以使用堆优化，和Dijkstra一样用优先队列代替对，优化prim算法时间复杂度为O(mlogn)，适用于稀疏图，但是稀疏图的时候求最小生成树，Kruskal更加实用
+
+```c++
+int prim(){
+	int res=0;
+	memset(dist,0x3f,sizeof dist);
+	//把第一个点加入集合 
+	dist[1]=0;
+	for(int i=0;i<n;i++){
+		
+		//找到到集合距离最短的 
+		int t=-1;
+		for(int j=1;j<=n;j++){
+			if(!st[j] && (t==-1 || dist[t]>dist[j]))t=j;
+		}
+		if(dist[t]==0x3f3f3f3f)return dist[t];
+		st[t]=true;
+		res+=dist[t];
+		//更新点到集合的距离
+		for(int j=h[t];~j;j=ne[j]){
+			if(dist[e[j]]>w[j]){
+				dist[e[j]]=w[j];
+			}
+		}
+	}
+	return res;
+}
+```
+
+
+
+###Kruskal
+
+对边进行判断，首先对每一条边升序进行排序，然后遍历每一条边，加入生成树，如果最后生成树的边数=n-1，则表示生成树存在。
+
+判断新加入的边是否构成环，可以通过**并查集**来维护一个集合。
+
+```c++
+const int N=1e5+10,M=2e5+10;
+
+int n,m;
+int res;
+struct line{
+	int u;//起点 
+	int v;//终点 
+	int w;//权重 
+	//升序排序 
+	bool operator < (const line& t){
+		return this->w<t.w;
+	}
+	
+}line[M];
+int pre[N];
+//并查集查找 
+int find(int x){
+	if(pre[x]!=x) pre[x]=find(pre[x]);
+	return pre[x];
+}
+bool kruskal(){
+	int cnt=0;
+	//尝试加入每一条边
+	for(int i=0;i<m;i++){
+		int pa=find(line[i].u);
+		int pb=find(line[i].v);
+		if(pa!=pb){
+			res+=line[i].w;
+			pre[pa]=pb;
+			cnt++;
+		}
+		
+	} 
+	if(cnt<n-1){
+		return false;
+	}
+	return true;
+}
+```
 
 
 
@@ -448,60 +847,21 @@ ListNode* fast=head,*slow=head;//定义快慢指针
    ​	求next的算法(关键代码):
 
 ```c++
-int* GetNext(string t) {
-	int len = t.size();//获得模式串的长度
-    int* next = new int[len];//开辟一段数组 
-	int index = 0;//表示数组下标,每一次循环要求的是next[index+1]中的值
-	int j = -1;//表示next数组中的值
-	next[0] = -1;//next[0]赋初值
-	while (index < len) {
-		if (j == -1 || t[index] == t[j]) {
-			j++;
-			index++;
-			next[index] = j;
-		}
-		else {
-			j = next[j];
-		}
+	//求next的过程 默认字符串的下标是从1开始的
+	for(int i=2,j=0;i<=n;i++){
+		while(j&&p[i]!=p[j+1])j=ne[j];
+		if(p[i]==p[j+1])j++;
+		ne[i]=j;
 	}
-	return next;
-} 
-```
-
-```c++
-//KMP算法测试
-int main() {
-	string sstring;
-	string t;
-	getline(cin, sstring);//原串
-	getline(cin, t);//模块串
-	int i = 0,j=0,slen,tlen,*next;
-	slen = sstring.size();//获得原串的长度
-	tlen = t.size();//模块串的长度
-	next=GetNext(t);//获得next数组
-	while (i < slen && j < tlen) {
-		while ((sstring[i] == t[j]) && (j < tlen)) {
-			i++;
-			j++;
+	//kmp匹配
+	for(int i=1,j=0;i<=m;i++){
+		while(j && s[i]!=p[j+1])j=ne[j];
+		if(s[i]==p[j+1])j++;
+		if(j==n){
+			printf("%d",i-n+1);
+			j=ne[j];
 		}
-		if (j==tlen) {
-			cout << "已经找到字串，位置为" << i - j << endl;
-			break;
-		}
-		else {
-			if (next[j] == -1) {//表示已经到达模块串的第一位，需要将原串的指针移动到下一位
-				j=0;
-				i++;
-			}
-			else {
-				j = next[j];
-			}
-		}
-
-
-	}
-	return 0;
-}
+	} 
 ```
 
 
@@ -1105,6 +1465,7 @@ Booting算法
      * 插值法
        * 牛顿插值法
        * 三次样本插值法
+     * 函数拟合（样本数较多）
    * 异常值
      * 正态分布3σ原则 	数值分布在（μ-3σ，μ+3σ）中的概率为99.73%
      * [箱型图法](https://zhuanlan.zhihu.com/p/628585725) 普遍适用
@@ -1303,7 +1664,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 ### 分类模型
 
- **聚类分析**
+ #### 聚类分析
 
 对样本进行分类称为**Q型聚类**分析，对指标进行分类称为**R型聚类**分析。
 
@@ -1320,6 +1681,38 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 
 **适用条件：**层次聚类算法对时间和空间需求很大，所以层次适合于小型数据集的聚类
+
+####决策树分类
+
+<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240128154310075.png" alt="image-20240128154310075" style="zoom: 50%;" />
+
+信息熵，衡量集合中的混乱程度，当分类完成后，可以根据集合中熵的值来判断分类的程度，H(X)越大表示集合中越混乱，分类效果越差。
+
+如果是**回归问题**的话，就不同能过类别计算特征的信息熵，而是通过方差，如果基于一个特征分类完后，集合中的值方差很小，表示分类效果不错，值都比较相近。然后对训练模型进行预测的话，可以通过计算集合中的平均值来作为预测值
+
+**ID3：**计算信息增益，适用于每个特征都是**定类变量**，能够计算该特种中每个类别的信息熵，然后加权得到基于该特征分类的信息熵，再计算信息增益。但是如果对于定序或定距或类别比较多的特征，考虑一种极端情况，每个样本是该特征中的一个种类，那么该特征的信息熵计算出来就是0（因为该特征中每个类别的信息熵都是0，都只有一个样本对于这个类别），这就是ID3的缺陷。
+
+**C4.5：**计算信息增益率，解决ID3的问题，考虑某特征的自身熵值。
+
+**CART :**使用Gini系数当作衡量标准，和熵值类似
+
+![image-20240128160653715](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240128160653715.png)
+
+
+
+### 集成算法
+
+#### Bagging模型
+
+典型的是随机森林，很多个决策树并行放在一起，数据随机采样来训练模型，树之间不产生干扰。
+
+####Boosting模型
+
+提升算法
+
+#### Stacking模型
+
+
 
 ### BP神经网络
 
@@ -1410,6 +1803,22 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 #### 灰色预测模型
 
+基于时间序列的预测
+
+
+
+#### 长短期记忆（Long Short Term Memory，LSTM）网络
+
+基于时间序列的预测，可以记住早先时刻的信息，是一种特殊的RNN模型（RNN，循环神经网络）
+
+模型的自变量为历史数据，因变量未来某时刻的数据。
+
+
+
+
+
+#### 马尔科夫预测
+
 
 
 
@@ -1493,6 +1902,18 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
    **例如如下情况**
 
    <img src="https://img-blog.csdnimg.cn/20210112165617998.png?#pic_center" alt="img" style="zoom:50%;" />
+   
+   
+   
+   
+
+#### 数据包络DEA分析法
+
+用于评价效率问题
+
+#### Topsis综合评价方法
+
+
 
 ### 仿真方法
 
