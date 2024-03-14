@@ -105,6 +105,10 @@ while(l<r){
 
 
 
+**引理：**[L/P]**上取整**=[(L+P-1)/P]**下取整**（下取整相当于是c++中的整除/）
+
+
+
 ## 递归
 
 求解等比数列：这是一种常规的求解方式，或者利用公式法
@@ -144,10 +148,32 @@ ll qmi(ll a,ll k,ll p){
 		b>>=1;//指数除2
 		a=(a*a)%p;//底数平方
 	}
-	return res;
+return res;
 }
 
 ```
+
+
+
+**快速幂求逆元**
+
+在取模的条件下，除以一个数等价于乘以这个数的乘法逆元
+
+**逆元要做的就是把除法的模转换的乘法的模。逆元的充要条件是b和n互质（最大公约数为1）**
+
+当**n为质数**时，可以用快速幂求逆元：
+a / b ≡ a * x (mod n)  
+两边同乘b可得 a ≡ a * b * x (mod n)
+即 1 ≡ b * x (mod n)
+**同 b * x ≡ 1 (mod n)**（**称x为b的模n的乘法逆元**）
+由**费马小定理**可知，当n为质数时
+b ^ (n - 1) ≡ 1 (mod n)
+拆一个b出来可得 b * b ^ (n - 2) ≡ 1 (mod n)
+故当n为质数时，b的乘法逆元 x = b ^ (n - 2)  （**利用快速幂求解1~n-1之间的逆元**）
+
+
+
+
 
 ## 分解质因数
 
@@ -166,7 +192,7 @@ a%j==0的判断中j一定是质数，如果j是个合数，那么它能分解成
 				while(a%j==0){
 					a=a/j;
 					s++;
-				}
+				} 
 				cout<<j<<" "<<s<<endl;
 			}
 		} 
@@ -177,6 +203,10 @@ a%j==0的判断中j一定是质数，如果j是个合数，那么它能分解成
 ```
 
 ## 筛素数
+
+**质数定理：**1-n的数之间，质数的个数为n/logn，两种筛的方式不能只筛一个区间必须从2开始
+
+
 
 **埃氏筛：**时间复杂度O(nlogn*logn)，思想就是在筛选的时候，只把**质数的倍数**删掉，因为每个合数都能够由**多个质数**或者**两个质数**或者**一个质数一个合数**相乘，不像传统筛法，把每个数的倍数筛掉，这样会造成筛的重复，时间复杂度高
 
@@ -219,13 +249,88 @@ if(i%primes[j]==0) break;
     
 ```
 
+## 最小公约数
+
+**辗转相除法**
+
+```c++
+int gcd(int a,int b){
+	if(b>a)swap(a,b);
+	while(a%b){
+		int t=a%b;
+		a=b;
+		b=t;
+	}
+	return b;
+}
+```
+
+## 排列组合
+
+根据加法计数原理：
+
+![image-20240313164126242](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240313164126242.png)
+
+加法计数原理解释：c[a] [b]看作从a个苹果中拿b个苹果的情况，根据容斥原理，可以分为两种情况：1.a个苹果中必拿其中一个苹果的情况。2.a个苹果中不拿其中一个苹果的情况。这样两种情况相加就是从a拿b个苹果的情况。分别对应以上的递推式。
+
+这递推式有点dp的味道了，后者的值的可以根据前者的值算出来。通过这种方式可以降低计算排列组合的时间复杂度。
+
+**递推法求排列组合**
+
+时间复杂度为O(N^2^)
+
+```c++
+void init(){
+	for(int i=0;i<N;i++){
+		for(int j=0;j<=i;j++){
+			if(!j)c[i][j]=1;//取零个=1
+			else c[i][j]=(c[i-1][j-1]+c[i-1][j])%P;
+		}
+	}
+}
+```
 
 
-## 并查集
+
+**公式法+快速幂求排列组合**
+
+由于递推法需要开二维数组，当要求的组合数太大时，空间会溢出，所以还有一种公式法
+
+<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240314163304471.png" alt="image-20240314163304471" style="zoom:67%;" />
+
+```c++
+const int P=1e9+7;
+int n;
+LL fact[N],infact[N];//存阶乘以及阶乘的逆元
+//快速幂
+LL qmi(LL a,LL b){
+	LL res=1;
+	while(b){
+		if(b & 1)res=res*a % P;
+		b=b>>1;
+		a=a*a% P;
+	}
+	return res;
+}
+//预处理 
+void init(){
+	fact[0]=1,infact[0]=1;//边界初始值
+	for(int i=1;i<N;i++){
+		fact[i]=fact[i-1]*i % P;
+		infact[i]=infact[i-1]*qmi(i,P-2) % P;
+	} 
+} 
+```
+
+
+
+## **并查集**
 
 一种树形的数据结构，近乎O(1)的时间复杂度。
 
-又一次理解了并查集用来维护额外信息的作用，可以用来记录集合中的元素个数，也可以维护节点到根节点之间的距离，可能还有别的，然后在进行路径压缩的时候修改需要维护的额外信息。
+又一次理解了并查集用来维护额外信息的作用，可以用来记录集合中的元素个数，也可以维护节点到根节点之间的距离，可能还有别的，然后在进行路径压缩的时候修改需要维护
+
+的额外信息。
 
 主要构成 pre[]数组、find()、join()
 
@@ -553,7 +658,7 @@ int dijkstra(){
 		int ver=t.second,distance=t.first;
 		if(st[ver])continue;
 		st[ver]=true;
-        //跟新最短距离
+        //更新最短距离
 		for(int i=h[ver];i!=-1;i=ne[i]){
 			int j=e[i];
 			if(dist[j]>distance+w[i]){
@@ -645,7 +750,9 @@ if(dist[x][y]>INF/2)cout<<"impossible"<<endl;
 
 ### prim
 
-时间复杂度为O(n^2)，可以使用堆优化，和Dijkstra一样用优先队列代替对，优化prim算法时间复杂度为O(mlogn)，适用于稀疏图，但是稀疏图的时候求最小生成树，Kruskal更加实用
+**朴素prim算法**
+
+时间复杂度为O(n^2)，可以使用堆优化，和Dijkstra一样用优先队列代替对，优化prim算法时间复杂度为O(mlogn)，适用于稀疏图，但是稀疏图的时候求最小生成树，Kruskal更加实用。
 
 ```c++
 int prim(){
@@ -674,13 +781,57 @@ int prim(){
 }
 ```
 
+**堆优化版prim算法**
+
+```c++
+typedef pair<int,int> PII;
+const int N=110;
+int n;
+int map[N][N];
+int dist[N];
+bool st[N];
+int prim(){
+	
+	int res=0;
+	memset(dist,0x3f,sizeof dist);//初始化距离
+	//创建优先队列
+	priority_queue<PII,vector<PII>,greater<PII> > heap;
+	dist[1]=0;
+	heap.push(make_pair(0,1));//将第一个点加入优先队列
+	while(heap.size()){
+		//取出距离的最小值
+		PII t=heap.top();
+		heap.pop();
+		//更新到集合的距离
+		int ver=t.second;
+		if(st[ver])continue;//因为可能存在一个点被多次加入优先队列的情况，所以如果已经
+		st[ver]=true;
+		res+=t.first;
+		for(int i=1;i<=n;i++){
+			if(!st[i]){
+				if(dist[i]>map[ver][i]){
+					dist[i]=map[ver][i];
+					heap.push(make_pair(dist[i],i));
+				}
+			}
+		} 
+	} 
+	return res;
+	
+}
+```
+
 
 
 ###Kruskal
 
+**时间复杂度为O(mlogm)**
+
 对边进行判断，首先对每一条边升序进行排序，然后遍历每一条边，加入生成树，如果最后生成树的边数=n-1，则表示生成树存在。
 
 判断新加入的边是否构成环，可以通过**并查集**来维护一个集合。
+
+kruskal算法可以求解多个连通块最小生成树，因为是对边进行操作，每次把边加入最小生成树集合，但是并不能保证最后的最小生成树是个连通图（可能有多个最小生成树），所以最后还需要判断一下最小生成树边的数量cnt和点的数量n的关系，cnt=n-1则表示最后的最小生成树是一个连通图。
 
 ```c++
 const int N=1e5+10,M=2e5+10;
@@ -720,6 +871,198 @@ bool kruskal(){
 		return false;
 	}
 	return true;
+}
+```
+
+
+
+## 最近公共祖先-LCA
+
+**朴素版求解公共祖先**
+
+首先令深度深的一端结点先移动，移动到相同深度后，然后同时往上移动，知道找到相同的结点，即为找到公共祖先。
+
+**时间复杂度:**  时间复杂度为O(nlogn)，如果是链状的二叉树，时间复杂度为O(n^2)
+
+```c++
+//获得最近公共祖先 
+int get_lca(int a,int b){
+	if(dist[a]<dist[b])return get_lca(b,a);
+	//将两个点移动至同一个深度
+	while(dist[a]>dist[b]) a=f[a];
+	//同时向上移动
+	while(a!=b){
+		a=f[a];
+		b=f[b];
+	} 
+	return a;//返回公共祖先
+}
+```
+
+
+
+[**基于倍增求解公共祖先**]([LCA问题（倍增法）_倍增lca-CSDN博客](https://blog.csdn.net/Q_M_X_D_D_/article/details/89924963?spm=1001.2014.3001.5506))
+
+在朴素版求解中，结点每次都是移动一个单位，时间复杂度高。而基于倍增的思想，每次移动**2^j**个距离单位，所以我们构造了一个f(i)(j)数组，**表示从结点i出发，向上移动2^j所到达的结点编号。**在预处理f数组时，也用到了**动态规划**的思想
+
+```c++
+int n,m;
+int dist[N];//深度
+int que[N];
+int f[N][16]; 
+//计算点到根结点的距离 
+void bfs(int root){
+	memset(dist,0x3f,sizeof dist);
+    //在这里有一个技巧，就是将根节点dist[root]=1，dist[0]=0;这样可以完美的避开边界问题，就是在进行LCA时，会出现结点一步走过	 //头的情况，按理说如果走过头，结点不能进行跳跃，如果将dist[root]=0，那么在判断dist[f[a][i]]>=dist[b]时，就会可能成立
+    //结点就会进行跳跃（当b是根结点时，dist[root]=0，条件就会成立）。
+	dist[root]=1,dist[0]=0;
+	int hh=0,tt=0;
+	que[0]=root;
+	while(hh<=tt){
+		int t=que[hh++];
+		//遍历临边
+		for(int i=h[t];~i;i=ne[i]){
+			int j=e[i];
+			//cout<<"j"<<j<<endl;
+			if(dist[j]>dist[t]+1){
+				dist[j]=dist[t]+1;
+				que[++tt]=j;//加入队列 
+				//p[j]=t;//记录父节点 
+				//计算2^k步所能到的结点
+                //利用bfs求解深度时，可以顺带预处理f数组，因为每一层的f数组计算只与前几层已经计算过的值有关
+                //就比如计算f[j][1]=f[f[j][0]][k-1]，而f[j][0]一定在bfs搜索第一层的时候已经计算出来了。
+				f[j][0]=t;//k=0表示走一步 
+				for(int k=1;k<=15;k++){
+					f[j][k]=f[f[j][k-1]][k-1];
+				} 
+			}
+		} 
+	}
+}
+//获得最近公共祖先
+int get_lca(int a,int b){
+	if(dist[a]<dist[b])swap(a,b);
+	//一个结点往上走，从大到小
+	for(int i=15;i>=0;i--){
+		if(dist[f[a][i]]>=dist[b])a=f[a][i];
+	} 
+	if(a==b)return a;
+	//同时向上移动
+	for(int i=15;i>=0;i--){
+        //如果结点不相同，表示最近公共祖先还在上面，可以跳上去。
+        //如果结点相同，表示找到公共祖先，但可能不是最近公共祖先，最近公共祖先可能在偏下的位置，所以不需要跳上去。
+		if(f[a][i]!=f[b][i]){
+			a=f[a][i];
+			b=f[b][i];
+		}
+	} 
+    //假设a、b距离lca的层数为10，在i=3时，f[a][i]!=f[b][i]，a和b跳了上去。在i=1时，f[a][i]=f[b][i],表示找到
+    //公共祖先，虽然我们肉眼可以知道已经到达最近公共祖先了，但是程序并不知道，程序会认为最近公共祖先可能还在下面的位置
+    //所以不需要跳跃上去。在i=0时，f[a][i]!=f[b][i]，a和b跳跃上去，最近公共祖先的距离为1。
+    //不管是否能够一次跳跃刚好能到达最近公共祖先，程序总是会在最近公共祖先的前一个位置停下。
+	return f[a][0];
+}
+```
+
+
+
+## 二分图
+
+**二分图说人话定义**：图中点通过移动能分成左右两部分，左侧的点只和右侧的点相连，右侧的点只和左侧的点相连。
+
+### 染色法
+
+染色法判断是否为为二分图，时间复杂度O(n + m)
+
+ **染色技巧：**就是给定的一个原题并不是一个二分图，但是我们可以通过加一些判断来隐藏掉一部分边，，然后判断子图是否为二分图。
+
+**dfs染色法**
+
+```c++
+bool dfs(int u,int c){
+	color[u]=c;
+	//给邻边染色
+	for(int i=h[u];~i;i=ne[i]){
+		int j=e[i];
+		if(!color[j]){
+			if(!dfs(j,3-c)){
+				return false;
+			}
+		}else{
+            //颜色与邻边相同
+			if(color[j]==color[u]){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+```
+
+**bfs染色法**
+
+```c++
+bool bfs(int u,int c){
+	color[u]=c;
+	int hh=0,tt=0;
+	que[0]=make_pair(u,c);
+	while(hh<=tt){
+		PII t=que[hh++];
+		int ver=t.first,col=t.second;
+		//遍历邻边加入队列 
+		for(int i=h[ver];~i;i=ne[i]){
+			int j=e[i];
+			if(!color[j]){
+				color[j]=3-col;
+				que[++tt]=make_pair(j,3-col);//加入队列 
+			}else{
+                //与邻边颜色相同
+				if(color[j]==color[ver]){
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+```
+
+
+
+### 二分图的最大匹配
+
+说人话定义：二分图左右两端的点集，左右点集的点与点之间，每个点只连接一个点（**一对一匹配**）。然后最大匹配就是使一对一匹配的数量最多
+
+**匈牙利算法**
+
+涉及到**递归**的思想，男生2找到自己匹配的女生1，如果这个女生1已经匹配了男生1，那么男生1就要去判断是否有别的女生可以选择，如果有，那么男生2就可以选择女生1，皆大欢喜（这样才有最大匹配）。如果男生1在查找的过程中碰到男生3已经选择的自己心仪的女生，那么男生3就要继续去查找（递归思想）
+
+首先利用要利用匈牙利算法的前提是这个图是一个二分图，且二分图的点集能够区分，许多题目比较隐蔽，不容易看出是一个最大匹配问题，比如Awing372.棋盘覆盖。
+
+```c++
+const int N=510,M=1e5+10;
+int h[N],e[M],ne[M],idx;
+int n1,n2,m;
+bool st[N];//每次遍历左端点集的时候，都要初始化st
+int match[N];//女生匹配的男生编号（右端匹配的左端编号） 
+void add(int a,int b){
+	e[idx]=b,ne[idx]=h[a],h[a]=idx++;
+}
+
+bool find(int u){
+	//遍历邻边
+	for(int i=h[u];~i;i=ne[i]){
+		int j=e[i];
+		if(!st[j]){
+			st[j]=true;
+			//如果这个女生还没有找到匹配的男生 或者 匹配的男生可以找到新的女生 
+			if(match[j]==0 || find(match[j])){
+				match[j]=u;
+				return true;
+			}
+		}
+	} 
+	return false;
 }
 ```
 
@@ -1165,80 +1508,6 @@ void heap_sort(int *a,int n){
 ```
 
 
-
-
-
-## Kruskal算法--最小生成树
-
-
-
-```c++
-//并查集中的查找父节点函数
-int find(int x){
-	if(pre[x] == x) return x;
-	return pre[x]=find(pre[x]);//路径压缩
-} 
-struct edge{
-	int u;
-	int v;
-	int w;
-};
-edge a[M];//定义边的数组
-//n是结点的个数，m是边的个数
-int kruskal(int n,int m){
-	int cnt=0;//统计加入生成树的边的条数
-	for(int i=1;i<=m;i++){
-		//找到边的两个端点的父节点，判断是否会形成环 
-		int father1=find(a[i].u);//find()函数，找到该节点对应的父节点(和哪些点连通)  具体见并查集
-		int father2=find(a[i].v);
-        //如果两个父节点相同，表示加入这条边会在图中形成环
-		if(father1==father2){
-			continue;
-		}else{
-            //表示可以加入图    
-			pre[father1]=father2;//将两个结点的父节点相连(并查集中的合并操作)
-			ans+=a[i].w;//ans统计最小生成树的权值和
-			cnt++;
-			if(cnt==n-1)break;
-		}
-	}
-    //输出最小生成树的长度和
-	if(cnt==n-1){
-		cout<<ans;
-	}else{
-		cout<<"orz";//表示不是连通图，不能构成生成树
-	}
-	
-}
-```
-
-```c++
-//测试函数
-#include<iostream>
-#include<algorithm>
-using namespace std;
-const int N=5100;
-const int M=200050;
-int pre[N];//并查集
-int ans; //统计最小生成树的长度和
-bool compareEdge(edge a1,edge a2){//伪函数 
-	return a1.w<a2.w;//升序 
-}
-int main(){
-	int n,m;
-	cin>>n>>m;
-	for(int i=1;i<=m;i++){
-		cin>>e[i].u>>e[i].v>>e[i].w; 
-	} 
-	sort(e+1,e+m+1,compareEdge);//排序
-	//初始化pre数组
-	for(int i=1;i<=n;i++){
-		pre[i]=i;
-	} 
-	kruscal(n,m);
-	return 0;
-}
-```
 
 ## 红黑树
 
