@@ -57,6 +57,8 @@
 
 13. memset(dis,-1,sizeof(dis))  用来初始化数组     <cstring>头文件中
 
+    memset是按字节进行赋值的，所以memset(f，0x3f，sizeof f)，就相当于给4字节的int赋值为0x3f3f3f3f。
+
 14. 在设置最大值时，可以使用    INF=0x3f3f3f3f  是一个很好的选择
 
     memset(a,INF,sizeof(a))。//通过这种方式，将数组初始化为无穷大
@@ -72,8 +74,8 @@
     size()    //获取元素个数
 
     clear()   //清空集合
+
     
-16. 
 
 # java
 
