@@ -460,7 +460,7 @@ ULL get(int l,int r){
 
 ##单调队列
 
-单调队列一般适用于求解一段区间内的最大或最小值
+单调队列一般适用于求解一段区间内的最大或最小值（一维滑动窗口问题）。
 
 ```c++
 //模拟队列
@@ -477,7 +477,64 @@ stk[++tt]=x;//压栈
 tt--;//出栈
 stk[tt];//访问栈顶
 tt>=0;//表示栈不为空
+
+//一维滑动窗口求解
+//求解某个序列中k范围内的极小值
+void get_min(int a[],int f[],int len){
+	//f用来存下k范围内的极值 
+	int hh=0,tt=-1;
+	for(int i=1;i<=len;i++){
+		while(hh<=tt && i-que[hh]+1>k)hh++;
+		while(hh<=tt && a[i]<=a[que[tt]])tt--;
+		que[++tt]=i;
+		f[i]=a[que[hh]];//没有加判断，表示<=k也是合法的， 
+	}
+} 
+//求解某个序列k范围内的极大值 
+void get_max(int a[],int f[],int len){
+	int hh=0,tt=-1;
+	for(int i=1;i<=len;i++){
+		while(hh<=tt && i-que[hh]+1>k)hh++;
+		while(hh<=tt && a[i]>=a[que[tt]])tt--;
+		que[++tt]=i;
+		f[i]=a[que[hh]];
+	}
+}
 ```
+
+
+
+**二维滑动窗口问题**
+
+**先求出每一行的极值，然后在这么多行的极值中再取极值**，这样的结果就是区间中的极值了。
+
+我们要求解的是一个矩阵中的极值。我们可以把它转化为一维的问题，首先求出每一行中区间内的极值，然后再对不同行的同一列的的极值再一次求解多个极值中的极值。这样就能求出区间中的极值。
+
+```c++
+//求解每一行的最小值
+for(int i=1;i<=n;i++){
+    get_min(a[i],min_row[i],m);//第i行区间内的最小值存在minv[i]，有m个 
+    get_max(a[i],max_row[i],m);
+} 
+//求解n行中同一列的最小值，也就是区间最小值
+int res=1e9;
+//对每一列进行判断
+for(int i=k;i<=m;i++){
+    //先把某列的值取出来
+    for(int j=1;j<=n;j++){
+        min_col[j]=min_row[j][i];
+        max_col[j]=max_row[j][i];
+    }
+    //求解某列的最小极差
+    get_min(min_col,res_min,n);
+    get_max(max_col,res_max,n);
+    for(int j=k;j<=n;j++) res=min(res,res_max[j]-res_min[j]);//求解极差
+
+} 
+
+```
+
+
 
 
 
@@ -740,7 +797,7 @@ int spfa(){
 const int N=210;
 int dist[N][N];
 //floyd算法
-void floyd(){
+void floyd(	){
 	for(int i=1;i<=n;i++){
 		for(int j=1;j<=n;j++){
 			for(int k=1;k<=n;k++){
@@ -1325,6 +1382,61 @@ for(int i=1;i<=n;i++){
 
 
 ### 区间DP
+
+```c++
+/*
+集合：f[i][j]表示在i~j之间的目标值
+集合计算：f[i][j]=max(f[i][j],f[i][k]+f[k+1][j])，以k作为分界点
+所有的区间dp问题枚举时，第一维通常是枚举区间长度，并且一般 len = 1 时用来初始化，枚举从 len = 2 开始；
+第二维枚举起点 i （右端点 j 自动获得，j = i + len - 1）
+*/
+
+//石子合并，求合并代价最小问题
+//先枚举区间长度
+for(int len=2;len<=n;len++){
+    //枚举左端点
+    for(int i=1;i+len-1<=n;i++){
+        int j=i+len-1;
+        for(int k=i;k<j;k++){
+            f[i][j]=min(f[i][j],f[i][k]+f[k+1][j]+s[j]-s[i-1]);
+        }
+    }
+} 
+cout<<f[1][n];
+```
+
+###树形DP
+
+对于树的问题，大部分都是利用dfs来搜索，进行要明白dfs的具体含义。
+
+对于有些无向边的树，我们无法找到具体根节点的位置，我们可以把任意点当作根节点，在dfs是加入父节点father的信息，避免重复计算。
+
+```c++
+/*
+对于树形DP，需要用邻接表存储结点之间的关系。然后求解时需要利用递归
+集合：f[u][0]表示以u为根节点的子树，不选根结点u的情况，得到的max/min
+	 f[u][1]表示以u为根节点的子树，选根节点u的情况,得到的max/min
+*/
+
+//没有上司的舞会（父节点和子节点不能同时被选中参加舞会，因为和上司一起吃饭不开心），求解开心度的最大值。
+void dfs(int u){
+	
+	f[u][1]=happy[u];//选中根节点u
+    //遍历子树
+	for(int i=h[u];~i;i=ne[i]){
+		int j=e[i];
+		dfs(j);//递归子树 
+		f[u][0]+=max(f[j][0],f[j][1]);//不选根节点u
+		f[u][1]+=f[j][0];
+	} 
+}
+```
+
+
+
+### 数位DP
+
+
 
 
 
