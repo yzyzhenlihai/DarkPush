@@ -51,6 +51,43 @@ b[i][j] = a[i][j] − a[i − 1][j] − a[i][j − 1] + a[i −1 ][j − 1]//差
 
 
 
+**树上差分**
+
+树上差分和一维差分类似，就是求解树的一条路径上，**点差分**或**边差分**。通常会结合LCA+树的遍历来考察。
+
+
+
+**点差分:** 对路径上的点（相当于一维差分的区间）加上或减去一个数。如下图所示，将（S,T）路径上的点都加上或减去一个数。
+
+相当于求解**蓝色区间+红色区间**同时加上或减去一个数
+
+```c++
+//与一维类似，只保证区间内的数变化，所以在区间左端加上一个数后，在右端还要减去一个数
+d[S]++,d[LCA]--;
+//这里是求解红色区间，LCA是包括在红色区间中的，f[LCA][0]是为了获得LCA的父节点，具体LCA笔记。
+d[T]++,d[f[LCA][0]]--;
+```
+
+
+
+![img](https://oi-wiki.org/basic/images/prefix_sum1.png)
+
+
+
+**边差分：**边差分是对边进行访问，采用差分策略
+
+为了便于计算，我们可以将边的权重**下移**到点中，这样就是**点差分**的内容了
+
+```c++
+//因为把边差分的权重，下移到点后，LCA就没有在要求的区间中了
+d[S1]++,d[LCA]--;
+d[T1]++,d[LCA]--;
+```
+
+
+
+![img](https://oi-wiki.org/basic/images/prefix_sum2.png)
+
 ## 二分
 
 ```c++
@@ -338,9 +375,11 @@ void init(){
 } 
 ```
 
+## 数据结构
 
 
-## **并查集**
+
+###**并查集**
 
 一种树形的数据结构，近乎O(1)的时间复杂度。
 
@@ -400,9 +439,53 @@ void join(int x,int y)
 }
 ```
 
+###Trie（字典树）
+
+[Trie]([深度解析Trie（字典树）-CSDN博客](https://blog.csdn.net/raelum/article/details/128885107))，又称字典树或前缀树，常用来存储和查询字符串。假定接下来提到的字符串均由小写字母构成，那么Trie将是一棵 26 叉树。   
+
+Trie存二进制数据或存字符串（以下代码为存二进制数）
+
+```c++
+ll a[N];//原始数据
+ll son[M][2];//存Trie树
+int idx;//Trie树结点下标
+//插入Trie树 
+//插入的步骤一般不会有变化，就是可能会增加cnt数组来维护字典树的额外信息，比如说经过某个结点的数的个数或者某个数出现的次数。
+void insert(int x){
+	int p=0;//树指针 
+	for(int i=30;i>=0;i--){
+		int t=(x >> i) & 1;//获得最高位
+		if(!son[p][t]) son[p][t]=++idx;//son[p][t]=0表示根结点没有值为“t”的子结点
+		p=son[p][t];
+	}
+}
+//查询某个数
+//查询就是遍历已经存在的字典树，完成相应的处理，比如说找到最大异或对，或者判断字符串是否已经出现过
+ll query(int x){
+	int p=0;
+	ll res=0;
+	for(int i=30;i>=0;i--){
+		int t=(x>>i)&1;
+		if(son[p][1-t]){
+			res+=(1<<i);
+			p=son[p][1-t];
+		}else{
+			p=son[p][t];
+		}
+	}
+	return res;
+}
+```
 
 
-## 数组模拟单链表
+
+### 树状数组
+
+
+
+
+
+###数组模拟单链表
 
 ```c++
 int e[N],ne[N],idx,head=-1;//head为链表的头指针
@@ -410,8 +493,8 @@ memset(ne,-1,sizeof ne);//需要对ne数组进行初始化，-1表示指向null
 void insert(int x){
     e[idx]=x;//存的数据
     ne[idx]=head;//模拟指针，指向下一个数据
-    head=idx;
-    idx++;
+    head=idx++;
+   
 }
 //删除第k个数据,其实删除并没有真正的删除，而是通过修改ne数组（指针指向）来达到删除的目的
 void del(int k){
@@ -425,7 +508,7 @@ void showList(){
 }
 ```
 
-## 字符串哈希
+###字符串哈希
 
 ![img](file:///E:\QQ\1826203343\Image\C2C\SBS`H6R2XYKUZ8QNI7$B8I3.png)
 
@@ -458,7 +541,7 @@ ULL get(int l,int r){
 
 
 
-##单调队列
+###单调队列
 
 单调队列一般适用于求解一段区间内的最大或最小值（一维滑动窗口问题）。
 
@@ -534,51 +617,7 @@ for(int i=k;i<=m;i++){
 
 ```
 
-
-
-
-
-##  Trie（字典树）
-
-[Trie]([深度解析Trie（字典树）-CSDN博客](https://blog.csdn.net/raelum/article/details/128885107))，又称字典树或前缀树，常用来存储和查询字符串。假定接下来提到的字符串均由小写字母构成，那么Trie将是一棵 26 叉树。   
-
-Trie存二进制数据或存字符串（以下代码为存二进制数）
-
-```c++
-ll a[N];//原始数据
-ll son[M][2];//存Trie树
-int idx;//Trie树结点下标
-//插入Trie树 
-//插入的步骤一般不会有变化，就是可能会增加cnt数组来维护字典树的额外信息，比如说经过某个结点的数的个数或者某个数出现的次数。
-void insert(int x){
-	int p=0;//树指针 
-	for(int i=30;i>=0;i--){
-		int t=(x >> i) & 1;//获得最高位
-		if(!son[p][t]) son[p][t]=++idx;//son[p][t]=0表示根结点没有值为“t”的子结点
-		p=son[p][t];
-	}
-}
-//查询某个数
-//查询就是遍历已经存在的字典树，完成相应的处理，比如说找到最大异或对，或者判断字符串是否已经出现过
-ll query(int x){
-	int p=0;
-	ll res=0;
-	for(int i=30;i>=0;i--){
-		int t=(x>>i)&1;
-		if(son[p][1-t]){
-			res+=(1<<i);
-			p=son[p][1-t];
-		}else{
-			p=son[p][t];
-		}
-	}
-	return res;
-}
-```
-
-## 邻接表
-
-
+###邻接表
 
 ```c++
 int h[N],e[M],w[M],ne[M],idx;//idx为边的序号
@@ -592,9 +631,11 @@ void add(int a, int b, int c)   // 添加有向边 u->v, 权重为weight
 
 
 
+## 搜索
 
 
-## BFS
+
+###BFS
 
 边权为1的求最短路问题可以用bfs做，因为是一层一层搜的，所以能找到最短路（第一次访问到的就是最短的）
 
@@ -634,7 +675,7 @@ int bfs(){
 
 
 
-## DFS
+###DFS
 
 强调顺序，然后再dfs完回溯后需要**恢复现场**，也就是把有一些标记的点重新清除标记。
 
@@ -788,6 +829,20 @@ int spfa(){
 ```
 
 
+
+### 差分约束
+
+差分约束就是把**不等式的约束**，求解自变量的最大值或最小值，转化为单源最短路或最长路的求解。
+
+**如何求最大值或最小值，这里的最值指的是每一个变量的最值。**
+
+能够这样子转化是因为该不等式约束刚好和最短路求解中的**松弛操作**对应
+
+<img src="C:\Users\86159\Documents\Tencent Files\1826203343\Image\C2C\差分约束.png" alt="差分约束" style="zoom: 67%;" />
+
+
+
+![差分约束](C:\Users\86159\AppData\Roaming\Tencent\Users\1826203343\QQ\WinTemp\RichOle\差分约束.png)
 
 ### Floyd
 
@@ -981,6 +1036,23 @@ int get_lca(int a,int b){
 在朴素版求解中，结点每次都是移动一个单位，时间复杂度高。而基于倍增的思想，每次移动**2^j**个距离单位，所以我们构造了一个f(i)(j)数组，**表示从结点i出发，向上移动2^j所到达的结点编号。**在预处理f数组时，也用到了**动态规划**的思想
 
 ```c++
+//dfs求解点的深度+倍增求解父节点
+//dfs代码少一点，就是可能会有爆栈的风险
+void dfs(int u,int father){
+	depth[u]=depth[father]+1;
+	f[u][0]=father;
+	for(int k=1;k<=16;k++)f[u][k]=f[f[u][k-1]][k-1];//倍增计算父节点 
+	for(int i=h[u];~i;i=ne[i]){
+		int j=e[i];
+		if(j==father)continue;
+		dfs(j,u);
+	}
+} 
+```
+
+
+
+```c++
 int n,m;
 int dist[N];//深度
 int que[N];
@@ -1145,7 +1217,9 @@ bool find(int u){
 
 ## DP问题
 
+**我的理解：**首先需要确定一个集合f（最重要的部分），每一维表示一个限制，然后可能会有多个状态转移到这个集合，然后对该集合进行分类讨论。
 
+对于每一维的确定，如果是一个集合有**多种状态**的情况需要分类讨论，比如状压DP，那么就要把状态作为某一维。也相当于对集合进行划分，然后对集合的每个部分进行分析，判断可能可以从前面哪些状态转移过来。
 
 ==无后效性==：每一个子问题只求解一次，以后求解问题的过程不会修改以前求解的子问题的结果
 
@@ -1436,7 +1510,173 @@ void dfs(int u){
 
 ### 数位DP
 
+### 状压DP
 
+状态压缩DP本质上就是用**二进制的方式**表示所有的状态，因为状态总数的阶乘级的，所以适用于n比较小的情况，可以枚举所有的状态进行状态转移。一般需要先预处理合法状态，以及状态与状态之间转移的合法性。
+
+
+
+
+
+## 排序算法
+
+
+
+###归并排序  
+
+时间复杂度O(nlogn)    空间复杂度O(n)，稳定排序
+
+就是给定两个有序数组，将两个数组合并在一起升序。
+
+定义一个更大的数组，给定两个指针分别指向两个数组，每次取较小值放入新数组。
+
+```c++
+void mergeSort(int a[],int l,int r){
+	
+	if(l>=r)return;
+	int mid=l+r>>1;
+    //分离数组
+	mergeSort(a,l,mid);
+	mergeSort(a,mid+1,r);
+	//合并l-r范围内的数组 
+	int i=l,j=mid+1,k=0;
+	while(i<=mid&&j<=r){
+		if(a[i]<a[j])tmp[k++]=a[i++];
+		else tmp[k++]=a[j++];
+	}
+	//将剩余的数直接添加到序列的后面 
+	while(i<=mid)tmp[k++]=a[i++];
+	while(j<=r)tmp[k++]=a[j++];
+	//拷贝到原数组
+	k=0;
+	for(int i=l;i<=r;i++){
+		a[i]=tmp[k++];
+	} 
+}
+```
+
+### 快速排序   
+
+快速排序的思想就是找到一个**基准值**，把序列分成两个部分，左半部分大于等于基准值，右半部分小于等于基准值。
+
+然后对左右部分分别进行递归排序。
+
+最差时间复杂度O(n^2) 和冒泡排序一样，平均时间复杂度 O(n*logn)不稳定排序
+
+```c++
+void quickSort(int a[],int l,int r){
+	if(l>=r)return;
+	int i=l-1,j=r+1;
+	//选取基准值
+	int std=a[l+r>>1];
+	while(i<j){
+        //为了考虑边界问题，边界问题有很多，直接找个正确的模板背过即可
+		while(a[--j]>std);
+		while(a[++i]<std);
+		if(i<j)swap(a[i],a[j]);
+	}
+	quickSort(a,l,j);//对左边排序 
+	quickSort(a,j+1,r);//对右边排序 
+	
+}
+```
+
+### 快速选择查找 
+
+快速选择查找就是基于快速排序，**只对包含第k个值的区间排序**，不需要排序整个数组
+
+平均时间复杂度为O(n)，最坏时间复杂度为O(n^2)
+
+```c++
+//快速选择排序算法
+void sort(int a[],int l,int r){
+	
+	if(l>=r)return;
+	int i=l-1,j=r+1;
+	int std=a[l+r>>1];
+	while(i<j){
+		while(a[--j]>std);
+		while(a[++i]<std);
+		if(i<j)swap(a[i],a[j]);
+	} 
+	if(j>=k-1)sort(a,l,j);
+	else sort(a,j+1,r);
+}
+```
+
+### 桶排序
+
+不基于比较的排序算法
+
+通过统计值域内每个数据的个数，然后根据个数排序
+
+```c++
+int count[1002];//存放数的个数 这里数的值域是[0,1000]
+void bucketSort(int n){
+    //统计每个数据的个数
+	for(int i=0;i<n;i++){
+		count[num[i]]++;
+	}
+	int cnt=0;
+    //值域为[0,1000]
+	for(int i=0;i<=1000;i++){
+		while(count[i]!=0){
+			num[cnt++]=i;//将数填回原数组
+			count[i]--;
+		}
+	}
+}
+```
+
+
+
+###堆排序(升序)   
+
+时间复杂度  O(nlogn)，不稳定排序
+
+空间复杂度 O(1)
+
+```c++
+//对某个根节点调整为大根堆
+//从上往下进行调整
+void adjust_down(int *a,int n,int i){//i是需要调整的根节点的下标
+	int father=i;
+	int child=i*2+1;
+	while(child<n){
+        //比较孩子结点的大小，选出较大的那个
+		if((child+1)<=n-1&&a[child]<=a[child+1]) ++child;
+        //交换父节点和孩子结点，并顺着孩子结点向下继续调整
+		if(a[father]<a[child]){
+			int temp;
+			temp=a[child];
+			a[child]=a[father];
+			a[father]=temp;
+			father=child;
+			child=father*2+1;
+		}else{
+            //一旦不能继续调整就退出循环
+			break;
+		}
+	}
+	
+}
+
+
+void heap_sort(int *a,int n){
+	//建立大根堆
+    //(n-1)/2为从后往前，第一个有孩子的结点
+	for(int i=(n-1)/2;i>=0;i--){
+		adjust_down(a,n,i);
+	} 
+	//摘取大顶,与最后一个结点交换 
+	for(int i=0;i<n-1;i++){
+		int temp=a[0];
+		a[0]=a[n-i-1];
+		a[n-i-1]=temp;
+		adjust_down(a,n-i-1,0);
+	} 
+}
+```
 
 
 
@@ -1625,187 +1865,6 @@ st表是一种数据结构，主要用于解决RMQ（区间最大值或最小值
    ```
 
 
-
-## 归并排序  稳定排序
-
-时间复杂度O(nlogn)    空间复杂度O(n)
-
-就是给定两个有序数组，将两个数组合并在一起升序。
-
-定义一个更大的数组，给定两个指针分别指向两个数组，每次取较小值放入新数组。
-
-```c++
-//1.分离函数
-void mergesort(int x,int y)			//分离，x 和 y 分别代表要分离数列的开头和结尾
-{
-	if (x>=y) return;        //如果开头 ≥ 结尾，那么就说明数列分完了，分的只有一个数了，就返回
-	int mid=(x+y)/2;            //将中间数求出来，用中间数把数列分成两段
-	mergesort(x,mid);			//左右两端继续分离
-	mergesort(mid+1,y);        
-	merge(x,mid,y);        //分离玩之后就合并,升序排序，从最小段开始
-}
-```
-
-```c++
-//2.合并算法
-
-void merge(int low,int mid,int high) //将两段的数据合并成一段，每一段数据都已经升序排序
-{
-	int i=low,j=mid+1,k=low;
-    //i、j 分别标记第一和第二个数列的当前位置，k 是标记当前要放到整体的哪一个位置
-	while (i<=mid && j<=high)    //如果两个数列的数都没放完，循环
-	{
-		if (a[i]<a[j])
-			b[k++]=a[i++];     //a[n](原始数组)和b[n](临时存数据的数组)为全局函数
-		else
-			b[k++]=a[j++];   //将a[i] 和 a[j] 中小的那个放入 b[k]，然后将相应的标记变量增加
-	}        // b[k++]=a[i++] 和 b[k++]=a[j++] 是先赋值，再增加
-	while (i<=mid)
-		b[k++]=a[i++];
-	while (j<=high)
-		b[k++]=a[j++];    //当有一个数列放完了，就将另一个数列剩下的数按顺序放好
-	for (int i=low;i<=high;i++)
-		a[i]=b[i];                //将 b 数组里的东西放入 a 数组，因为 b 数组还可能要继续使用
-}
-```
-
-
-
-## 快速排序   不稳定排序
-
-最差时间复杂度O(n^2) 和冒泡排序一样，平均时间复杂度O(n*log2n)
-
-递归算法：
-
-```c++
-void sort(int* a,int l,int r){
-	if(l>r)return;
-	int i=l,j=r;
-	int std=a[l]; //最左端作为标准值  因为标准值是最左端的数，所以要先从右边开始找
-	while(i!=j){
-		while(a[j]>=std&&i<j){//从右往左 找到比标准小的数 
-			j--;             
-		}
-	
-		while(a[i]<=std&&i<j){//从左往右 找到比标准大的数 
-			i++;
-		}
-		if(j>i){  //交换找到的两个值
-			int t=a[i];
-			a[i]=a[j];
-			a[j]=t;
-		}
-	}
-	//退出循环表示i==j,将标准值换到i=j的地方，继续递归运行
-	a[l]=a[i];   
-	a[i]=std;
-	sort(a,l,i-1);
-	sort(a,i+1,r);
-}
-```
-
-## 快速选择查找 (基于快速排序)    
-
-可以用来查找第k小(大)的数，在快速排序每一轮确定基准值位置的时候判断是否是要选择的数
-
-平均时间复杂度为O(n)，最坏时间复杂度为O(n^2)
-
-```c++
-//快速选择排序算法
-int quickChoose(int left,int right,int k){
-	if(left>right)return -1;
-	int i=left,j=right;
-	int std=num[left];
-	while(i!=j){
-		while(i<j&&num[j]>=std)j--;
-		while(i<j&&num[i]<=std)i++;
-		if(i<j){
-			int t=num[i];
-			num[i]=num[j];
-			num[j]=t;
-		}
-	}
-	num[left]=num[j];
-	num[j]=std;
-	if(k-1>j)quickChoose(j+1,right,k);//表示要查找的数在基准值位置的右边
-	if(k-1<j)quickChoose(left,j-1,k);//在基准值的左边
-	if(k-1==j)return num[k-1];//返回第k小(大)的值
-} 
-```
-
-## 桶排序
-
-不基于比较的排序算法
-
-通过统计值域内每个数据的个数，然后根据个数排序
-
-```c++
-int count[1002];//存放数的个数 这里数的值域是[0,1000]
-void bucketSort(int n){
-    //统计每个数据的个数
-	for(int i=0;i<n;i++){
-		count[num[i]]++;
-	}
-	int cnt=0;
-    //值域为[0,1000]
-	for(int i=0;i<=1000;i++){
-		while(count[i]!=0){
-			num[cnt++]=i;//将数填回原数组
-			count[i]--;
-		}
-	}
-}
-```
-
-
-
-##堆排序(升序)   不稳定排序
-
-时间复杂度  O(nlogn)
-
-空间复杂度 O(1)
-
-```c++
-//对某个根节点调整为大根堆
-//从上往下进行调整
-void adjust_down(int *a,int n,int i){//i是需要调整的根节点的下标
-	int father=i;
-	int child=i*2+1;
-	while(child<n){
-        //比较孩子结点的大小，选出较大的那个
-		if((child+1)<=n-1&&a[child]<=a[child+1]) ++child;
-        //交换父节点和孩子结点，并顺着孩子结点向下继续调整
-		if(a[father]<a[child]){
-			int temp;
-			temp=a[child];
-			a[child]=a[father];
-			a[father]=temp;
-			father=child;
-			child=father*2+1;
-		}else{
-            //一旦不能继续调整就退出循环
-			break;
-		}
-	}
-	
-}
-
-
-void heap_sort(int *a,int n){
-	//建立大根堆
-    //(n-1)/2为从后往前，第一个有孩子的结点
-	for(int i=(n-1)/2;i>=0;i--){
-		adjust_down(a,n,i);
-	} 
-	//摘取大顶,与最后一个结点交换 
-	for(int i=0;i<n-1;i++){
-		int temp=a[0];
-		a[0]=a[n-i-1];
-		a[n-i-1]=temp;
-		adjust_down(a,n-i-1,0);
-	} 
-}
-```
 
 
 
