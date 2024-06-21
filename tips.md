@@ -1424,15 +1424,34 @@ git push
 
 git log   查看提交日志
 
+git reflog	查看分支切换的日志
+
 git config --list   //查看git配置
 
 git config user.name 
 
 git config user.email
 
-
+git status  查看本地仓库的提交状态，红色表示修改未添加到暂存区，需要add
 
 git branch   "分支名" 	创建分支
+
+git rebase "分支名"。和git merge类似，这里是改变该分支的基准（根据原理理解）。
+
+**利用SSH从本地创建文件提交至仓库的步骤：**
+
+1. git init 创建本地仓库
+2. git add .添加至暂存区
+3. git commit -m " " 推送至本地仓库
+4. ssh -T git@github.com连接github
+5. 复制github仓库中的ssh地址。使用命令 git remote add origin  "ssh地址"    连接至仓库
+6. git push -u origin master推送至远程仓库
+
+
+
+**冲突处理：**
+
+对于文本文件的冲突：Git把有冲突的段落标记出来了，上面是HEAD，也就是当前所在的分支，中间是分隔线，下面是另一个分支的内容。选择想要的删掉或留下，然后重新git add
 
 **git正确开发流程**
 
