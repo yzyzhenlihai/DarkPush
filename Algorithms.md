@@ -214,7 +214,7 @@ while(l<r){
 
 
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240515160451611.png" alt="image-20240515160451611" style="zoom:67%;" />
+<img src="images/picture6.png" alt="image-20240515160451611" style="zoom:67%;" />
 
 
 
@@ -250,7 +250,7 @@ LL exgcd(LL a,LL b,LL& x,LL& y){
 
 **欧几里得算法应用**
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240515162434472.png" alt="image-20240515162434472" style="zoom:67%;" />
+<img src="images/picture7.png" alt="image-20240515162434472" style="zoom:67%;" />
 
 
 
@@ -452,7 +452,7 @@ void init(){
 
 由于递推法需要开二维数组，当要求的组合数太大时，空间会溢出，所以还有一种公式法
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240314163304471.png" alt="image-20240314163304471" style="zoom:67%;" />
+<img src="images/picture8.png" alt="image-20240314163304471" style="zoom:67%;" />
 
 ```c++
 const int P=1e9+7;
@@ -482,7 +482,7 @@ void init(){
 
 ###字符串哈希
 
-![img](file:///E:\QQ\1826203343\Image\C2C\SBS`H6R2XYKUZ8QNI7$B8I3.png)
+![img](images/picture9.png)
 
 通过求解字符串前缀的哈希值的方式，可以比较字符串内任意字串的相等情况。首先需要把每个字符映射成数字，是什么无所谓（因为字符不好计算哈希值呀），然后类似于计算前缀和的方式，这里是计算h[i]表示前i个字符的哈希值。然后把要计算的每个前缀字符串看作是一个P进制的数（用于求解哈希值的），然后最终结果要映射的0~Q^n-1^的范围内，也就是要mod Q。对于P的经验值为131或者13331，Q一般是2^64^（此算法我们默认哈希不会产生冲突，不像前面的数值哈希会产生冲突）
 
@@ -753,7 +753,7 @@ ll query(int x){
 
 4. 树的深度为log2n+1
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240409193946442.png" alt="image-20240409193946442" style="zoom:67%;" />
+<img src="images/picture10.png" alt="image-20240409193946442" style="zoom:67%;" />
 
 ```c++
 
@@ -1336,7 +1336,7 @@ if(dist[j]>dist[t]+w[i]){
 
 
 
-<img src="C:\Users\86159\Documents\Tencent Files\1826203343\Image\C2C\差分约束.png" alt="差分约束" style="zoom: 67%;" />
+<img src="images/picture11.png" alt="差分约束" style="zoom: 67%;" />
 
 
 
@@ -2365,10 +2365,6 @@ ListNode* fast=head,*slow=head;//定义快慢指针
 
 
 
-*以下是手写证明：*
-
-![img](file:///D:\QQ\1826203343\Image\C2C\E331194655F113A5D88003F3C6DB446C.jpg)
-
 ## 复制带随机指针的链表
 
 [复制带随机指针的链表_leetcode](https://leetcode.cn/problems/copy-list-with-random-pointer/)
@@ -2473,7 +2469,7 @@ st表是一种数据结构，主要用于解决RMQ（区间最大值或最小值
 
    
 
-   ![img](https://img-blog.csdnimg.cn/img_convert/9767786ef22208934da9fb4faa16cb96.png)
+   ![img](images/picture12.png)
 
    ```c++
    //由上图得，将要求得一个区间分为两个区间
@@ -2490,7 +2486,7 @@ st表是一种数据结构，主要用于解决RMQ（区间最大值或最小值
 
    
 
-   ![img](https://img-blog.csdnimg.cn/img_convert/27915cff73812cc0bd6a87333b08b2e7.png)
+   ![img](images/picture13.png)
 
    找到一个值s，使得l+2 ^ s-1，尽可能接近r，r-2 ^ s+1尽可能接近l，两个区间的长度都是2 ^ s
 
@@ -2518,11 +2514,11 @@ st表是一种数据结构，主要用于解决RMQ（区间最大值或最小值
 
 ## 多重邻接表(存储无向图)
 
-![image-20230214104351092](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230214104351092.png)
+![image-20230214104351092](images/picture14.png)
 
 ## 十字链表(存储有向图)
 
-![image-20230214104512747](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230214104512747.png)
+![image-20230214104512747](images/picture15.png)
 
 
 
@@ -2574,7 +2570,7 @@ void createArrange(int k,int n){//k是数组的位置，n是数的个数
 
 **递归情况如图：(以n=3为例)**
 
-![image-20230316230903951](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230316230903951.png)
+![image-20230316230903951](images/picture16.png)
 
 
 
@@ -2804,9 +2800,9 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
      4. 按照学习率前进   （按照学习率重新获得新的w和b的值）
      5. 求解当前y的均方误差和上一次的均方误差，如果足够接近则表示已经获得相对正确的值
 
-     ![image-20230722215652804](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230722215652804.png)
+     ![image-20230722215652804](images/picture17.png)
 
-     <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230722215559468.png" alt="image-20230722215559468" style="zoom: 50%;" />
+     <img src="images/picture18.png" alt="image-20230722215559468" style="zoom: 50%;" />
 
      ```python
      import numpy as np
@@ -2906,7 +2902,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
    **[多分类Logistic回归分析]((https://blog.csdn.net/m0_60862600/article/details/122986644?ops_request_misc=%7B%22request%5Fid%22%3A%22169234171916800180682340%22%2C%22scm%22%3A%2220140713.130102334..%22%7D&request_id=169234171916800180682340&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-1-122986644-null-null.142^v93^chatsearchT3_2&utm_term=多分类逻辑回归&spm=1018.2226.3001.4187))：**
 
-   ![logistic回归流程](https://img-blog.csdnimg.cn/b599b8ca1871414e8a3625b8821ddce7.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6buR5rSe5ou_6ZOB,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center)
+   ![logistic回归流程](images/picture20.png)
 
    
 
@@ -2932,7 +2928,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 对样本进行分类称为**Q型聚类**分析，对指标进行分类称为**R型聚类**分析。
 
-![image-20230825201945937](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230825201945937.png)
+![image-20230825201945937](images/picture21.png)
 
 **聚类变量重要性：**在给定数据集上进行聚类时，我们可以尝试**不同的聚类数**，并计算每个聚类数下的**轮廓系数**（聚类结果的评价指标）。轮廓系数是一种衡量聚类结果**紧密度**和**分离度**的指标，取值范围在-1到1之间，数值越接近1表示聚类结果越好。
 
@@ -2940,7 +2936,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 **簇间不相似度**：计算样本𝑖到其它簇![C_j](https://latex.csdn.net/eq?C_j)的所有样本的平均距离![b_{ij}](https://latex.csdn.net/eq?b_%7Bij%7D)，应尽可能大。
 
-![img](https://img-blog.csdnimg.cn/3741245c6acc480e910259ea0f9c4dfa.png)
+![img](images/picture22.png)
 
 
 
@@ -2948,7 +2944,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 ####决策树分类
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240128154310075.png" alt="image-20240128154310075" style="zoom: 50%;" />
+<img src="images/picture23.png" alt="image-20240128154310075" style="zoom: 50%;" />
 
 信息熵，衡量集合中的混乱程度，当分类完成后，可以根据集合中熵的值来判断分类的程度，H(X)越大表示集合中越混乱，分类效果越差。
 
@@ -2960,7 +2956,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 **CART :**使用Gini系数当作衡量标准，和熵值类似
 
-![image-20240128160653715](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240128160653715.png)
+![image-20240128160653715](images/picture24.png)
 
 
 
@@ -3008,9 +3004,9 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 * **EMA(指数移动平均）**
 
-  ![image-20230720113034098](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113034098.png)
+  ![image-20230720113034098](images/picture25.png)
 
-  ![image-20230720113055371](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230720113055371.png)
+  ![image-20230720113055371](images/picture26.png)
 
   随着权重因子 β 的增大（β增大，表示先前的指数移动平均占比增大），指数移动平均曲线逐渐变得更加平滑，但同时指数移动平均值的实时性（当前值所占的比重减小，对平均值的影响减弱）也随之变弱。
 
@@ -3093,7 +3089,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 **灰色关联度计算方式：**
 
-![image-20230819164509046](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230819164509046.png)
+![image-20230819164509046](images/picture27.png)
 
 **关联度计算：**每列因素的灰色关联度**求均值**即为某因素的关联度
 
@@ -3107,23 +3103,23 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
 1. **数据归一化**
 
-   ![image-20230724180734479](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724180734479.png)
+   ![image-20230724180734479](images/picture28.png)
 
 2. **计算第j项指标下第i个方案的指标值比重**
 
-   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181012250.png" alt="image-20230724181012250" style="zoom: 80%;" />
+   <img src="images/picture29.png" alt="image-20230724181012250" style="zoom: 80%;" />
 
 3. **计算第j项指标的信息熵**
 
-   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181146911.png" alt="image-20230724181146911" style="zoom:80%;" />
+   <img src="images/picture30.png" alt="image-20230724181146911" style="zoom:80%;" />
 
 4. **计算各指标的权重**
 
-   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230724181245080.png" alt="image-20230724181245080" style="zoom:80%;" />
+   <img src="images/picture31.png" alt="image-20230724181245080" style="zoom:80%;" />
 
 5. **计算评价对象的综合评价值**
 
-   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230725155220781.png" alt="image-20230725155220781" style="zoom: 50%;" />
+   <img src="images/picture32.png" alt="image-20230725155220781" style="zoom: 50%;" />
 
 #### 模糊综合评价法
 
@@ -3147,7 +3143,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
    4. 确定模糊综合判断矩阵
 
-      ![image-20230725164402034](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230725164402034.png)
+      ![image-20230725164402034](images/picture33.png)
 
       该矩阵是通过定性分析得出的，每个人对ui指标按照评语集V进行评价，并统计出每个评语所占的比重，获得Ri
 
@@ -3165,7 +3161,7 @@ SSR回归平方和、SST总体平方和、SSE误差平方和
 
    **例如如下情况**
 
-   <img src="https://img-blog.csdnimg.cn/20210112165617998.png?#pic_center" alt="img" style="zoom:50%;" />
+   <img src="images/picture34.png" alt="img" style="zoom:50%;" />
    
    
    
@@ -3215,7 +3211,7 @@ Eta 相关系数：用于衡量两个分类变量之间的关系。由于是基�
 
    **适用于不服从正态分布的数据，两组变量是无序的**
 
-   <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230726174029512.png" alt="image-20230726174029512" style="zoom:33%;" />
+   <img src="images/picture35.png" alt="image-20230726174029512" style="zoom:33%;" />
 
    fo为观测值频数，fe为期望值频数。当计算出的卡方值大于卡方临界值时，就可以拒绝零假设 
 
@@ -3225,13 +3221,13 @@ Eta 相关系数：用于衡量两个分类变量之间的关系。由于是基�
 
      针对一个类别变量
 
-     <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230726174618582.png" alt="image-20230726174618582" style="zoom: 67%;" />
+     <img src="images/picture36.png" alt="image-20230726174618582" style="zoom: 67%;" />
 
    * 卡方独立性检验（二因素卡方检验）
 
      针对两个类别变量
 
-     <img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20230726174649658.png" alt="image-20230726174649658" style="zoom: 67%;" />
+     <img src="images/picture37.png" alt="image-20230726174649658" style="zoom: 67%;" />
 
      ​												fr为行观测频数的和，fc为列观测频数的和，n为样本总量
 
