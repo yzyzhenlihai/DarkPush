@@ -82,7 +82,7 @@ a^= b相当于a=a^b，将十进制数字转化为二进制进行运算，相同�
 
 使得 `a[i] = b[1] + b[2] + b[3] + ,,,,,, + b[i]`
 
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20201215163431253.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTYyOTI4NQ==,size_16,color_FFFFFF,t_70)
+![一维差分](images/picture3.png)
 
 当想要求解原数组[ l , r ]区间同时加上c，可以通过求解差分数组b，使**b[l]+c，b[r+1]-c**
 
@@ -122,7 +122,7 @@ d[T]++,d[f[LCA][0]]--;
 
 
 
-![img](https://oi-wiki.org/basic/images/prefix_sum1.png)
+![img](images\picture4.png)
 
 
 
@@ -138,7 +138,7 @@ d[T1]++,d[LCA]--;
 
 
 
-![img](https://oi-wiki.org/basic/images/prefix_sum2.png)
+![img](images\picture5.png)
 
 ## 二分
 
@@ -182,7 +182,7 @@ while(l<r){
 
 当运算多个数相乘再取模时，可以利用公式3进行运算，先对每个数取模后再计算乘积，这样乘积结果就不会溢出
 
-###约数之和![image-20231203185920996](C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20231203185920996.png)
+###约数之和![image-20231203185920996](images/picture2.png)
 
 
 
@@ -1332,7 +1332,7 @@ if(dist[j]>dist[t]+w[i]){
 
    
 
-<img src="images/differential_constraint.png" style="zoom: 80%;" />
+<img src="images/picture1.png" style="zoom: 80%;" />
 
 
 
