@@ -122,7 +122,7 @@ d[T]++,d[f[LCA][0]]--;
 
 
 
-![img](images\picture4.png)
+![img](images/picture4.png)
 
 
 
@@ -138,7 +138,7 @@ d[T1]++,d[LCA]--;
 
 
 
-![img](images\picture5.png)
+![img](images/picture5.png)
 
 ## 二分
 
