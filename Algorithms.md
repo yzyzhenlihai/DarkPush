@@ -1,4 +1,4 @@
-## 一些做题函数
+一些做题函数
 
 1. **to_string()**，可以将数字转换为字符串
 
@@ -36,9 +36,15 @@
    cout<<setiosflags(ios::fixed)<<setprecision(2)<<res/n;
    ```
 
+
+6. 加快cin速度
+
+   ```c++
+   ios::sync_with_stdio(0);
+   cin.tie(0);
+   ```
+
    
-
-
 
 异或运算
 
@@ -410,13 +416,8 @@ if(i%primes[j]==0) break;
 
 ```c++
 int gcd(int a,int b){
-	if(b>a)swap(a,b);
-	while(a%b){
-		int t=a%b;
-		a=b;
-		b=t;
-	}
-	return b;
+	if(!b) return a;
+    return gcd(b,a%b);
 }
 ```
 
@@ -1331,7 +1332,7 @@ if(dist[j]>dist[t]+w[i]){
 
    
 
-<img src="C:\Users\86159\AppData\Roaming\Typora\typora-user-images\image-20240523202701495.png" alt="image-20240523202701495" style="zoom: 80%;" />
+<img src="images/differential_constraint.png" style="zoom: 80%;" />
 
 
 
