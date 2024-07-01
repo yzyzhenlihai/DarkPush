@@ -57,6 +57,28 @@
    cin.tie(0);
    ```
 
+7. 重载运算符
+
+   ```c++
+   //重载优先队列"<",重载">"号会报错
+   struct node{
+   	int id,blank,tt;
+       //优先级越大优先队列越先输出，下面表示t.tt越小，优先级越大(小根堆)
+       //这里函数后面的const一定要加，不然会报错
+   	bool operator<(const node& t)const{
+   		if(tt!=t.tt) return tt>t.tt;
+   		else return blank>t.blank;
+   	}
+   };
+   
+   //sort排序比较函数重载
+   bool cmp(PII a,PII b){
+       //升序比较
+   	if(a.second!=b.second) return a.second<b.second;
+   	else return a.first<b.first;
+   }
+   ```
+
    
 
 异或运算
