@@ -1,6 +1,12 @@
 ##一些做题函数
 
-1. ```c++
+1. 数据范围判断
+   
+   ![image-20231202221103876](images/picture41.png)
+   
+2. 
+
+   ```c++
    to_string(val);//可以将数字转换为字符串
    stoi(s,p,b);//把字符串s从p开始转换成b进制的int
    stoll();//转换成long long 
@@ -12,7 +18,7 @@
 
    
 
-2. ```c++
+3. ```c++
    //对于一些没有限定个数的字符或数字的输入
    #include<sstream>
    string s;
@@ -22,13 +28,13 @@
    while (ssin >> p) stop[cnt ++] = p;//移出字符串流后会自动类型转换
    ```
 
-3. 对于可能爆long long的情况，需要改用更大的范围，如下所示
+4. 对于可能爆long long的情况，需要改用更大的范围，如下所示
 
    ```c++
    using LL=__int128_;
    ```
 
-4. 遍历map的方式
+5. 遍历map的方式
 
    ```c++
    for(auto it:mp){
@@ -1048,10 +1054,6 @@ void add(int a, int b, int c)   // 添加有向边 u->v, 权重为weight
     
 }
 ```
-
-
-
-
 
 
 
