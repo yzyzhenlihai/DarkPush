@@ -667,21 +667,30 @@ ULL get(int l,int r){
    ​	求next的算法(关键代码):
 
 ```c++
-	//求next的过程 默认字符串的下标是从1开始的
-	for(int i=2,j=0;i<=n;i++){
-		while(j&&p[i]!=p[j+1])j=ne[j];
-		if(p[i]==p[j+1])j++;
-		ne[i]=j;
+//求next的过程 默认字符串的下标是从1开始的
+//ne数组记录的是，在失配后，应该从模式串的什么位置开始匹配
+void get_next(){
+	ne[1]=0;
+	int i=1,j=0;
+	while(i<=n){
+		if(j==0 || p[i]==p[j]) ne[++i]=++j;//求解next[i+1]的值 
+		else j=ne[j];
 	}
-	//kmp匹配
-	for(int i=1,j=0;i<=m;i++){
-		while(j && s[i]!=p[j+1])j=ne[j];
-		if(s[i]==p[j+1])j++;
-		if(j==n){
-			printf("%d",i-n+1);
-			j=ne[j];
-		}
-	} 
+}
+//kmp匹配
+void kmp(){
+	for(int i=1,j=1;i<=m;){
+		if(j==0 || s[i]==p[j]){
+			if(j==n){
+				cout<<i-n<<" ";
+				j=ne[j]; 
+			}else{
+				i++;
+				j++;
+			}
+		}else j=ne[j];		
+	}
+}
 ```
 
 
@@ -689,6 +698,18 @@ ULL get(int l,int r){
 ### Manacher算法（马拉车）
 
 manacher算法用于求解字符串中的**最长回文子串**。时间复杂度为O(N)。
+
+
+
+<img src="images/picture42.png" alt="Manacher算法流程" style="zoom: 80%;" />
+
+
+
+**计算位置i的回文半径图解**
+
+通过区间[l,r]之间的对称性，将位置i对称到已经计算出回文半径的位置l+r-i。
+
+![](images/picture43.png)
 
 ```c++
 /*
@@ -836,6 +857,10 @@ void join(int x,int y)
         pre[fy]=fx;
 }
 ```
+
+**并查集的使用：**
+
+1. 在一个图中，给出询问判断两点之间是否可以到达，利用bfs或dfs是一种方式，但是这种方式对于多组询问时时间复杂度太高了，可以通过构造并查集，位于同一个集合中的点可以互相到达，查询的时间复杂度可以做到O(1)。
 
 ###Trie（字典树）
 
@@ -1273,15 +1298,15 @@ void dfs(int t){
 
 有向无环图一定存在拓扑序列，通过入度为0来判断该点是否可以加入队列。
 
-## 强连通分量
+## Tarjan算法
+
+###强连通分量
 
 **定义：**在有向图G中，如果两个顶点u，ｖ间有一条从ｕ到ｖ的有向路径，同时还有一条从ｖ到ｕ的有向路径，则称两个顶点强连通。如果有向图G的每两个顶点都强连通，称G是一个强连通图。有向非强连通图的极大强连通子图，称为强连通分量（Strongly Connected Components, SCC）。换句话说，**一个强连通分量中的每两个点可以互相到达，且这个强连通分量所包含的的节点数尽可能大**。
 
-
-
 <img src="images/picture39.png" alt="img" style="zoom:67%;" />
 
-### Tarjan算法
+
 
 Tarjan算法可以寻找有向图的中强连通分量，将每一个强连通分量缩成一个点，就可以把有向图转化为DAG有向无环图（拓扑图）。
 
@@ -1317,7 +1342,7 @@ void tarjan(int u){
 		}else if(in_stk[j]){
             //如果碰到已经访问过的结点
 			//back edge
-			low[u]=min(low[u],low[j]);
+			low[u]=min(low[u],dfn[j]);
 		}
 	}
 	//强连通分量子树的根结点 
@@ -1345,6 +1370,52 @@ void tarjan(int u){
 ```
 
 
+
+### 割点
+
+**定义：**对于一个无向图（可能不是一个连通图，有多个连通分量），如果把一个点删除后，图的连通分量增加，那么这个点就是这个图的割点
+
+```c++
+int n,m;
+int dfn[N],low[N],timestamp;
+bool flag[N]; //判断割点是否以及加入到答案中
+vector<int> vec;//割点的答案
+int root;//因为无向图不一定是连通图，所有要进行多次dfs,那么需要记录每次dfs的根节点
+void tarjan(int u,int father){
+	dfn[u]=low[u]=++timestamp;
+	int child=0;//记录u结点在dfs搜索树中的孩子个数（原因下面会有解释）
+	for(int i=h[u];~i;i=ne[i]){
+		int j=e[i];
+		if(j==father)continue;
+		if(!dfn[j]){
+			//树边
+			child++;
+			tarjan(j,u);
+			low[u]=min(low[u],low[j]);
+            //low[j]>=dfn[u]表示j结点不可以到达比u更早访问的结点（祖先结点），也就是说如果u结点被删掉，
+            //那么j结点和u结点前面访问过的结点是是不连通的，满足割点的定义
+			if(u!=root && low[j]>=dfn[u] && !flag[u]){
+				flag[u]=true;
+				vec.push_back(u);
+			}
+		}else{
+			//非树边
+			low[u]=min(low[u],dfn[j]); 
+		}
+	}
+    /*
+    	这里root（dfs搜索树的根节点）需要单独判断。因为根比较特殊，如果child>=2，则表示root是一个割点。
+    	如何解释呢？
+    	在dfs搜索中，根节点是最后才回溯的，也就是说如果root有两个及以上的孩子，就表示其他的点都没能搜索到
+    	root的孩子（导致root还需要继续搜索），那么如果删掉root，就会存在其他的点无法到达root的其中几个孩
+    	子，所以root此时就是割点。
+    */
+	if(u==root && child>=2 && !flag[u]){
+		vec.push_back(u);
+		flag[u]=true;
+	}
+}
+```
 
 
 
@@ -2063,6 +2134,7 @@ bool find(int u){
    * 当体积至少是j，f[0,0]=1,其余是0
    
 4. **求解最大值和最小值**f数组的初始化
+  
    * 体积最多是j，f[i,k]，0<=i<=m,0<=k<=m
    * 体积恰好是j，f[0,0]=0，其余是INF或者-INF
    * 体积至少是j，f[0,0]=0，其余是INF（只会求最小值）
@@ -2366,7 +2438,34 @@ void dfs(int u){
 }
 ```
 
+**树上背包DP**
 
+树上背包dp就是树形DP+背包DP。一些题目给定了树形结构，在这个树形结构中选取一定数量的点或边（也可能是其他属性），使得某种与点权或者边权相关的花费最大或者最小。解决这类问题，一般要考虑使用树上背包。
+
+```c++
+//洛谷:P2014 [CTSC1997] 选课
+int dfs(int u){
+	int p = 1;//记录u子树中结点的数量 
+  	f[u][1] = w[u];
+	for(int i=h[u];~i;i=ne[i]){
+		int son=e[i];
+		int siz = dfs(son);//记录以son为根节点的子树的结点个数
+        /*
+        	这里解释一下为什么需要逆序枚举j？
+        	类似于背包DP利用滚动数组优化空间复杂度。由于dfs的特性，以u为根节点的每棵子树都是按顺序一个一个访问的
+        	对于这道题f[i][j]表示以i为根节点的子树，选择课程的数量是j的所获得的最大学分数。这里省略掉了一维k就是对于前k棵
+        	以i为根节点的子树（类似于分组背包，一个子树一个子树考虑）。
+        */
+		for(int j=m+1;j>=1;j--){
+			for(int k=0;k<=siz && k+j<=m+1;k++){
+				f[u][j+k]=max(f[u][j+k],f[u][j]+f[son][k]);
+			}
+		}
+    	p += siz;
+  	}
+	return p;
+}
+```
 
 ### 数位DP
 
