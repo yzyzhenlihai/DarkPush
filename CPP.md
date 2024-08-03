@@ -2,7 +2,7 @@
 
 ```makefile
 #编写makefile文件
-
+ALL:testfile   #ALL 确定最终目标文件
 #方式1
 testfiles: main.cpp function.cpp
 	g++ -o testfiles main.cpp function.cpp
@@ -60,8 +60,8 @@ $(TARGET):$(OBJ)
 %.o:%.cpp
 	$(CXX) $(CFLAGES) $<
 
-.PHONY:clean
-clean:
+.PHONY:clean     #伪目标
+clean:  
 	del *.o $(TARGET) 
 
 #其他函数
@@ -70,7 +70,7 @@ object=foo.o bar.o baz.c
 flitered_objects=$(filter-out %.c $object)
 ```
 
-
+`make -f m1` 	指定文件执行make命令，可能有些makefile文件叫xxx.mk，所以需要自己指定
 
 ## Cmake
 
@@ -336,7 +336,7 @@ Linux系统编程和网络编程，很重要
 
 `list ` 简写为`l` 列出源码，根据源码指定行号设置断点
 
-`break/b 20`  在20行设置断点
+`break/b 20`  在20行设置断点    
 
 `run/r` 运行程序
 
@@ -350,9 +350,29 @@ Linux系统编程和网络编程，很重要
 
 `quit` 退出当前调试
 
+
+
 `start` 不加断点，一步一步执行看看
 
 `finish` 结束当前函数
+
+`set args` 设置main函数命令行参数
+
+`run 字串1 字串2...` 设置main函数命令行参数
+
+`info b` 查看断点信息
+
+`b 20 if i=6` 设置条件断点
+
+`ptype i` 查看变量类型，一般查看自定义类型。
+
+`backtrace/bt` 查看栈帧调用（函数调用）的层级关系
+
+`frame 1` 根据栈帧编号，切换栈帧。一般和bt结合使用
+
+ `display` 设置跟踪变量，把每次都把变量值打印出来。  
+
+`undisplay  1` 根据变量编号删除跟踪变量。
 
 gdb进去之后直接run，可以直接找到段错误的位置，重要有点用了！！
 
