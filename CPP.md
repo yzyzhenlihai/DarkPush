@@ -378,7 +378,84 @@ gdb进去之后直接run，可以直接找到段错误的位置，重要有点�
 
   
 
+### 文件IO
 
 
 
+open()  创建文件时，指定文件访问权限。权限同时受umask影响。**文件权限=mode & ~mask**
 
+**int open(char *pathname, int flags)**
+
+参数：
+
+​	pathname:文件路径
+
+​	flags:文件打开方式    	O_RDONLY|O_WRONLY|O_RDWR  
+
+返回值：
+
+​	成功：打开文件所得到的**文件描述符**（整数）
+
+​	失败：返回-1，设置errno
+
+**int open(char *pathname, int flags, mode_t mode) **      #include<unistd.h>
+
+参数：	
+
+​	pathname:文件路径    
+
+​	flags:文件打开方式    	 #include<fcntl.h>
+
+​		O_RDONLY|O_WRONLY|O_RDWR      O_TRUNC(将文件清空)|O_CREAT(如果文件不存在就创建文件)
+
+​	mode:参数3指定的前提，参数2指定了 O_CREAT    取8进制数，用来描述文件权
+
+`close()`
+
+**int close(int id)**
+
+错误处理函数：与errno相关
+
+​	char \***strerror**(int errnum)  ：用来将错误号码转化为错误文本
+
+​	void perror(const char* s)
+
+​				perror("open error")   传入出错的表述就可以了
+
+
+
+`read()`
+
+​	ssize_t read(int fd, void *buf, size_t count)
+
+参数：
+
+​	fd：文件描述符
+
+​	buf：缓冲区
+
+​	count：缓冲区的大小
+
+返回值：
+
+​	成功：读到的字节数
+
+​	失败：-1 设置errno
+
+`write()`
+
+​	ssize_t write(int fd, const void *buf, size_t count)
+
+参数：
+
+​	fd：文件描述符
+
+​	buf：缓冲区
+
+​	count：数据大小
+
+返回值：
+
+​	成功：写入的字节数
+
+​	失败：-1，设置errno

@@ -1013,6 +1013,9 @@ dates=pd.date_range('20231030',periods=6) #periods指定产生日期的天数，
 df=df.sort_values(by='列名',ascending=False) #ascending排序方式，True升序，False降序
 #按索引进行排序
 df=df.sort_index(ascending=True,axis=0)#axis=0对行索引排序
+
+#判断DataFrame是否为空
+df.empty
 ```
 
 ## numpy库
