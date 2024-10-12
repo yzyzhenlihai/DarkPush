@@ -1208,11 +1208,84 @@ int main(){
 
 
 
+#### 信号捕捉
+
+**由内核调用捕捉函数**
+
+`signal()`
+
+`sigaction()`
+
+信号捕捉特性：
+
+1. 捕捉函数期间，信号屏蔽字由mask->sa_mask，捕捉函数执行结束，恢复为mask
+2. 在某信号捕捉函数执行期间，该信号如果再次来临，自动被屏蔽(sa_flags = 0)
+3. 常规的阻塞信号不支持排队，产生多次只记录一次。（后32个实时信号支持排队）
+
+**内核实现信号捕捉过程：**
+
+![img](../images-AudioVideo/picture2.png)
 
 
 
+#### SIGCHLD信号
 
+产生条件：
 
+1. 子进程终止时
+2. 子进程接收SIGSTOP信号停止时
+3. 子进程处于停止态，接受SIGCONT后唤醒时
 
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<signal.h>
+#include<sys/wait.h>
+#include<unistd.h>
+#define N 15
 
+//利用SIGCHLD信号回收子进程
+void sys_err(const char *str){
+    perror(str);
+    exit(1);
+}
+void wait_child(int signo){
+
+    //循环回收子进程的捕捉函数
+    pid_t wpid;
+    while((wpid=wait(NULL))!=-1){
+        printf("the child %d is recycled successfully\n",wpid);
+    }
+}
+int main(){
+
+    pid_t pid;
+    int i;
+    //在信号未注册前，阻塞所有信号,以免子进程无法回收
+    sigset_t set;
+    sigfillset(&set);
+    sigprocmask(SIG_BLOCK,&set,NULL);
+    for(i=0;i<N;i++){
+
+        pid=fork();
+        if(pid==0)
+            break;
+    }   
+    if(i==N){
+        //解除阻塞
+        sigprocmask(SIG_UNBLOCK,&set,NULL);
+        //注册信号
+        struct sigaction act;
+        act.sa_handler=wait_child;//捕捉函数
+        sigemptyset(&act.sa_mask);
+ 		act.sa_flags = 0;
+        sigaction(SIGCHLD,&act,NULL);
+        while(1);
+    }else{
+        sleep(1);
+        printf("I‘m child pid = %d\n",getpid());
+    }
+    return 0;
+}
+```
 
