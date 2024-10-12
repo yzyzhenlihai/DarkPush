@@ -1224,7 +1224,7 @@ int main(){
 
 **内核实现信号捕捉过程：**
 
-![img](../images-AudioVideo/picture2.png)
+![img](/images-AudioVideo/picture2.png)
 
 
 
