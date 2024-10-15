@@ -880,9 +880,9 @@ int main(){
 #include<stdlib.h>
 #include<unistd.h>
 #include<sys/wait.h>
-//使用管道实现兄弟进程通信
-//兄：ls
-//弟：wc -l
+/*使用管道实现兄弟进程通信
+  兄：ls
+  弟：wc -l*/
 int main(){
 
     int fd[2],i;
@@ -934,9 +934,9 @@ int main(){
 
 
 
-`ulimit -a` ：可以各种缓冲区大小
+`ulimit -a` ：可以查看各种缓冲区大小
 
-mkfile创建有名管道
+`mkfifo`创建有名管道
 
 fifo管道：
 
@@ -1010,6 +1010,425 @@ int ulink(const char *pathname)  删除文件。让文件具备删除条件，�
 
 
 
+#### 守护进程
+
+daemon进程，通常运行于操作系统后台，一般不与用户直接交互，周期性的等待某个时间的发生
+
+不受用户登录注销影响。通常采用以d结尾的命名方式
+
+**创建守护进程模型**
+
+1. 创建子进程，父进程退出。父进程不能创建会话，因为父进程是组长。
+2. 在子进程中创建新会话，`setsid()`
+3. 改变当前目录位置，`chdir()`，防止占用可卸载的文件系统（比如u盘，运行着突然被拔掉）
+4. 重设文件权限掩码，`umask()`，放置继承的文件创建屏蔽字拒绝某些权限
+5. 关闭/重定向文件描述符。
+6. 守护进程业务逻辑
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+/*创建守护进程*/
+void sys_err(const char* err){
+    perror(err);
+    exit(1);
+}
+
+int main(){
+
+    //创建子进程，父进程退出
+    pid_t pid=fork();
+    if(pid>0)
+        exit(0);
+
+    //子进程中创建新会话
+    pid_t sid=setsid();
+    if(sid==-1)
+        sys_err("setsid error");
+    //改变工作目录位置
+    int ret=chdir("/home/yuzy");
+    if(ret==-1)
+        sys_err("chdir error");
+
+    //重设文件掩码
+    umask(0022);
+    //重定向 0、1、2文件描述符
+    close(STDIN_FILENO);
+    //因为文件描述符0被关闭，所以这里的fd=0
+    int fd=open("/dev/null",O_RDWR);
+    dup2(fd,STDOUT_FILENO);
+    dup2(fd,STDERR_FILENO);
+
+    while(1);//模拟守护进程业务
+
+    return 0;
+}
+```
+
+
+
+### 线程
+
+进程：有独立的进程地址空间，有独立的pcb
+
+线程：有独立的pcb，但没有独立的地址空间
+
+`ps -Lf 进程id`    --->获得进程的线程号 LWP，给cpu执行的最小单位。和线程id不是一个东西
+
+**线程共享资源**
+
+1. 文件描述符表
+2. 每种信号的处理方式
+3. 当前的工作目录
+4. 用户ID和组ID
+5. 内存地址空间（.text/.data/.bss/heap/共享库）
+6. 线程共享全局变量！但是父子进程之间不共享，读时共享写时复制
+
+**线程非共享资源**
+
+1. 线程id
+2. 处理器现场和栈指针（内核栈）
+3. 独立的栈空间（用户空间栈）
+4. errno变量（全局变量）
+5. 信号屏蔽字
+6. 调度优先级
+
+#### 线程创建
+
+`pthread_t pthread_self()`  获得线程id,在进程地址空间内部标识线程的身份，和LWP不一样。
+
+`void* pthread_create(pthread_t *thread, const pthread_attr_t *attr,`
+
+`void *(*start_routine)(void *),void* arg)`    创建子线程。
+
+参1：传出参数，表示新创建的子线程的线程id
+
+参2：线程属性，NULL表示使用默认属性
+
+参3：子线程回调函数，创建成功，pthread_create函数返回时，该函数会被自动调用
+
+参4：参3回调函数的参数，没有传NULL。
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+
+/*创建子线程*/
+void sys_err(const char* str){
+    perror(str);
+    exit(1);
+}
+//子线程回调函数
+void* pthread_func(void *arg){
+
+    printf("pthread:pid = %d,tid = %lu\n",getpid(),pthread_self());
+    return NULL;
+}
+int main(){
+
+
+    pthread_t tid;
+    //创建子线程
+    int ret=pthread_create(&tid,NULL,pthread_func,NULL);
+    if(ret==-1)
+        sys_err("pthread_create error");
+
+    printf("main: the pid = %d,the tid = %lu\n",getpid(),pthread_self());
+    sleep(1);
+    return 0;
+}
+```
+
+
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#define N 5
+/*循环创建多个子线程*/
+void sys_err(const char* str){
+    perror(str);
+    exit(1);
+}
+//子线程回调函数
+void* pthread_func(void *arg){
+
+    printf("the %dth pthread:pid = %d,tid = %lu\n",(int)(long)arg,getpid(),pthread_self());
+    return NULL;
+}
+int main(){
+
+
+    pthread_t tid;
+    int i;
+    //创建子线程
+    for(i=0;i<N;i++){
+		//这里传递的是i，而不是i的地址，避免主线程修改i，子线程打印会出现错误
+        /*整数和指针的大小不一定相同，因此直接转换可能存在平台相关的风险。
+        在 64 位系统上，void* 通常是 64 位宽，而 int 是 32 位宽。
+        转换时必须小心，因为可能会出现数据丢失或未定义行为。*/
+        int ret=pthread_create(&tid,NULL,pthread_func,(void*)(long)i);
+        if(ret==-1)
+            perror("pthread_create error");
+    }   
+    printf("main is over\n");
+    sleep(1);
+    return 0;
+}
+
+
+```
+
+#### 线程退出
+
+`exit(0)`  退出进程
+
+`return`  返回函数调用者的位置
+
+`void pthread_exit(void *retval)` 退出当前线程
+
+retval：退出值，无退出值时为NULL。
+
+`int pthread_cancel(pthread_t thread)`  
+
+杀死线程，需要到达一个取消点，也就是说杀死线程是需要条件的，只有当线程进入内核的时候（当调用系统调用或者库函数的时候），才能成功杀死线程。
+
+`void pthread_testcancel(void)` 
+
+如何子线程中没有到达取消点，可以使用该函数，在程序中手动添加取消点。成功被`pthread_cancel`杀死的线程返回-1。
+
+```c
+int main(){
+     //所以上述循环创建多个子线程中，为了防止进程退出，sleep(1)来延长主进程的时间，来让主线程打印。
+    sleep(1);
+    //这里可以换成pthread_exit()函数来让主线程退出，不影响子线程的运行
+    pthread_exit(0);
+}
+```
+
+####线程回收
+
+`int pthread_join(pthread_t thread, void **retval)`   回收子线程，并获得子线程的返回值
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<string.h>
+/*利用pthread_join()函数回收子线程，并获得子线程的返回值*/
+void sys_err(const char* str){
+    perror(str);
+    exit(1);
+}
+//定义结构体
+typedef struct thread{
+    int var;
+    char str[256];
+}thrd;
+//子线程回调函数
+void* pthread_func(void *arg){
+    //局部变量不可以作为返回值，需要开辟地址
+    thrd *tval;
+    tval = malloc(sizeof(thrd));
+    tval->var=100;
+    strcpy(tval->str,"hello thread");
+
+    return (void*)tval;
+}
+
+int main(){
+
+
+    pthread_t tid;
+    //创建子线程
+    int ret=pthread_create(&tid,NULL,pthread_func,NULL);
+    if(ret==-1)
+        sys_err("pthread_create error");
+    thrd* retval;//记录子线程的返回值
+    pthread_join(tid,(void**)&retval);
+    printf("the %lu thread is over---var = %d,str = %s\n",tid,retval->var,retval->str);
+    //退出主线程
+    pthread_exit(NULL);
+}
+
+```
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#define N 5
+/*循环创建多个子线程,并循环回收子进程*/
+void sys_err(const char* str){
+    perror(str);
+    exit(1);
+}
+//子线程回调函数
+void* pthread_func(void *arg){
+
+    unsigned long* ret;
+    ret=malloc(sizeof(unsigned long));
+    *ret=pthread_self();
+    printf("the %dth pthread:pid = %d,tid = %lu\n",(int)(long)arg,getpid(),pthread_self());
+    return (void*)ret;
+}
+int main(){
+
+
+    pthread_t tid[N];
+    int i;
+    //创建子线程
+    for(i=0;i<N;i++){
+
+        int ret=pthread_create(&tid[i],NULL,pthread_func,(void*)(long)i);
+        if(ret==-1)
+            perror("pthread_create error");
+    }   
+    //循环回收所有的子线程
+    unsigned long* retval;
+    for(i=0;i<N;i++){
+        int ret=pthread_join(tid[i],(void**)&retval);
+        if(ret==-1)
+            sys_err("pthread_join error");
+        printf("the pthread %lu is recycled\n",*retval);
+    }
+    printf("main is over\n");
+    pthread_exit(NULL);
+    return 0;
+}
+```
+
+#### 线程分离
+
+`int pthread_detach(pthread_t thread)` 将指定线程进行分离，回收不需要通过主线程，会自动进行回收pcb
+
+成功：0
+
+失败：errno
+
+在`pthread_create` 函数中的`pthread_attr_t *attr` 参数可以直接设置线程的创建属性为**分离属性**，就不需要先创建线程再调用`pthread_detach`分离线程。
+
+ `int pthread_attr_init(pthread_attr_t *attr)`  初始化pthread_attr_t变量
+ `int pthread_attr_destroy(pthread_attr_t *attr)`   销毁pthread_attr_t变量
+
+` int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate)`   设置pthread_attr_t属性
+
+detachstate：PTHREAD_CREATE_DETACHED  设置分离属性（还有其他属性见man page）
+
+```c
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<pthread.h>
+/*线程分离*/
+
+void* child_thread(void* arg){
+
+    printf("the thread %lu is executing\n",pthread_self());
+    return NULL;
+}
+int main(){
+    int ret;
+    // contruct thread attribute
+    pthread_attr_t attr;
+    ret=pthread_attr_init(&attr);//init attribute
+    if(ret!=0){
+        fprintf(stderr,"pthread_init error:%s\n",strerror(ret));
+        exit(1);
+    }   
+    ret=pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);//set detach attribute
+
+    if(ret!=0){
+        fprintf(stderr,"pthread_attr_setdetachstate error:%s\n",strerror(ret));
+        exit(1);
+    }   
+    //create thread
+    pthread_t ti
+    ret=pthread_create(&tid,&attr,child_thread,NULL);
+    if(ret!=0){
+    
+        fprintf(stderr,"pthread_create error:%s\n",strerror(ret));
+        exit(1);
+    } 
+     //destroy attr
+	ret=pthread_attr_destroy(&attr);
+	if(ret!=0){
+		fprintf(stderr,"pthread_attr_destroy error:%s\n",strerror(ret));
+		exit(1);
+	}
+
+    // recycle child thread
+    ret=pthread_join(tid,NULL);
+    if(ret!=0){
+        fprintf(stderr,"pthread_join error:%s\n",strerror(ret));
+        exit(1);
+    }
+    pthread_exit(NULL);
+}
+```
+
+
+
+#### 线程错误提示
+
+与进程的`perror()`函数不同，在线程中不能通过这种方式进行错误打印，而是通过如下方式
+
+`fprintf(stderr,"phthread_detach error：%s\n",strerror(errnum))`  
+
+其中`strerror(errnum)`函数通过传入线程相关函数的返回值，来返回对应的错误情况.
+
+#### 线程同步
+
+restrict关键字：被该关键字限定的指针变量所指向的内存，必须由本指针完成（就是不能用其他指针）
+
+**互斥锁**
+
+`int pthread_mutex_init(pthread_mutex_t *restrict mutex,const pthread_mutexattr_t *restrict attr)`   初始化锁
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER      静态初始化锁
+
+`int pthread_mutex_destroy(pthread_mutex_t *mutex)`    销毁锁
+
+`int pthread_mutex_lock(pthread_mutex_t *mutex)`	上锁，上锁不成功会阻塞线程
+`int pthread_mutex_trylock(pthread_mutex_t *mutex)`	 上锁，上锁不成功会结束线程
+`int pthread_mutex_unlock(pthread_mutex_t *mutex)`		解锁
+
+**读写锁：**
+
+	1. 锁只有一把
+ 	2. 读共享，写独占
+ 	3. 写锁优先级高	
+
+`int pthread_rwlock_init(pthread_rwlock_t *restrict rwlock,const pthread_rwlockattr_t *restrict attr)`    初始化锁
+
+pthread_mutex_t mutex = PTHREAD_RWLOCK_INITIALIZER      静态初始化锁
+
+`int pthread_rwlock_destroy(pthread_rwlock_t *rwlock)`    销毁读写锁
+
+`int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock)`   上读锁
+`int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock)` 
+
+`int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock)`  上读锁
+
+`int pthread_rwlock_unlock(pthread_rwlock_t *rwlock)`    解锁
+
+
+
+**条件变量**
+
+本身不是锁，通常配合mutex使用
+
+
+
 ### 信号
 
 信号的特质：所有信号的产生及处理都是由【内核】完成的。
@@ -1051,7 +1470,7 @@ int ulink(const char *pathname)  删除文件。让文件具备删除条件，�
 #include<unistd.h>
 #include<signal.h>
 #include<sys/wait.h>
-//循环创建5个子进程，父进程用kill函数终止任意子进程
+/*循环创建5个子进程，父进程用kill函数终止任意子进程*/
 int main(){
 
     pid_t pid[5];
@@ -1163,7 +1582,7 @@ int main(){
 #include<stdlib.h>
 #include<unistd.h>
 #include<signal.h>
-//练习自定义信号集以及屏蔽信号集
+/*练习自定义信号集以及屏蔽信号集*/
 void print_pedset(sigset_t *set){
 
     for(int i=1;i<32;i++){
@@ -1214,9 +1633,18 @@ int main(){
 
 `signal()`
 
-`sigaction()`
+`sigaction(int signum, const struct sigaction *act,struct sigaction *oldact)`
 
-信号捕捉特性：
+struct sigaction {
+               void     (\*sa_handler)(int);                   //自定义捕捉函数 
+               void     (\*sa_sigaction)(int, siginfo_t *, void *);	//一般不用
+
+​               sigset_t   sa_mask;								// specifies a mask of signals which should be blocked
+​               int        sa_flags;									//
+​               void     (\*sa_restorer)(void);				//不适用于应用程序
+​           };
+
+**信号捕捉特性：**
 
 1. 捕捉函数期间，信号屏蔽字由mask->sa_mask，捕捉函数执行结束，恢复为mask
 2. 在某信号捕捉函数执行期间，该信号如果再次来临，自动被屏蔽(sa_flags = 0)
@@ -1244,7 +1672,7 @@ int main(){
 #include<unistd.h>
 #define N 15
 
-//利用SIGCHLD信号回收子进程
+/*利用SIGCHLD信号回收子进程*/
 void sys_err(const char *str){
     perror(str);
     exit(1);
@@ -1272,14 +1700,14 @@ int main(){
             break;
     }   
     if(i==N){
-        //解除阻塞
-        sigprocmask(SIG_UNBLOCK,&set,NULL);
         //注册信号
         struct sigaction act;
         act.sa_handler=wait_child;//捕捉函数
         sigemptyset(&act.sa_mask);
  		act.sa_flags = 0;
         sigaction(SIGCHLD,&act,NULL);
+         //解除阻塞
+        sigprocmask(SIG_UNBLOCK,&set,NULL);
         while(1);
     }else{
         sleep(1);
