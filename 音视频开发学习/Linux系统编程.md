@@ -119,14 +119,6 @@ s 表示将插入的成员作为符号表保存。
 -lmylib 表示链接名为 libmylib.a 的静态库。
 运行可执行程序，比如 ./test。
 
-
-
-
-
-
-
-Linux系统编程和网络编程，很重要
-
 ## Linux系统编程
 
 ### Linux常用指令
@@ -1215,6 +1207,8 @@ int main(){
 
 ####线程回收
 
+兄弟线程之间是可以相互回收的
+
 `int pthread_join(pthread_t thread, void **retval)`   回收子线程，并获得子线程的返回值
 
 ```c
@@ -1405,8 +1399,8 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER      静态初始化锁
 **读写锁：**
 
 	1. 锁只有一把
- 	2. 读共享，写独占
- 	3. 写锁优先级高	
+	2. 读共享，写独占
+	3. 写锁优先级高	
 
 `int pthread_rwlock_init(pthread_rwlock_t *restrict rwlock,const pthread_rwlockattr_t *restrict attr)`    初始化锁
 
@@ -1426,6 +1420,184 @@ pthread_mutex_t mutex = PTHREAD_RWLOCK_INITIALIZER      静态初始化锁
 **条件变量**
 
 本身不是锁，通常配合mutex使用
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<string.h>
+#define N 1024
+/*生产者和消费者*/
+void sys_err(const char* str,int ret){
+
+    fprintf(stderr,"%s:%s\n",str,strerror(ret));
+    exit(1);
+}
+//定义链表节点
+struct Node{
+    struct Node* next;
+    int num;
+};
+struct Node* head;//头指针
+//定义互斥锁和信号量
+pthread_mutex_t mutex;//互斥量
+pthread_cond_t empty,full;//条件变量
+void* producer(void* arg){
+    while(1){
+        pthread_mutex_lock(&mutex);
+        //生产产品
+        struct Node* product=(struct Node*)malloc(sizeof(struct Node));
+        product->num=rand()%100;
+        product->next=NULL;
+        //头插加入链表
+        product->next=head;
+        head=product;
+        printf("----producer is producing %d\n",product->num);
+        pthread_cond_signal(&empty);
+        pthread_mutex_unlock(&mutex);
+        sleep(rand()%5);
+    }
+    return NULL;
+}
+void* consumer(void* arg){
+    while(1){
+        pthread_mutex_lock(&mutex);
+        while(head==NULL){
+            //该函数在阻塞时会同时释放掉锁，并等待条件变量的唤醒
+            pthread_cond_wait(&empty,&mutex);
+        }
+        //消费产品
+        struct Node* product=head;
+        head=head->next;
+        printf("consumer is consuming %d\n",product->num);
+        free(product);
+        pthread_mutex_unlock(&mutex);
+        sleep(rand()%5);
+    }
+}
+int main(){
+    int ret;
+    //初始化互斥锁和信号量
+    ret=pthread_mutex_init(&mutex,NULL);
+    if(ret!=0)
+        sys_err("mutex_init error",ret);
+    pthread_cond_init(&empty,NULL);
+    pthread_cond_init(&full,NULL);
+    //创建生产者线程
+    pthread_t produce,consume;
+    ret=pthread_create(&produce,NULL,producer,NULL);
+    if(ret!=0)
+        sys_err("producer create error",ret);
+    //创建消费者线程
+    ret=pthread_create(&consume,NULL,consumer,NULL);
+    if(ret!=0)
+        sys_err("consumer create error",ret);
+    //回收子线程
+    pthread_join(produce,NULL);
+    pthread_join(consume,NULL);
+    //销毁互斥锁和信号量
+//  ret=pthread_mutex_destroy(&mutex);
+    if(ret!=0)
+        sys_err("mutex_destroy error",ret);
+  	pthread_cond_destroy(&empty);
+	pthread_cond_destroy(&full);
+    //结束主线程
+    pthread_exit(NULL);
+    return 0;
+}
+```
+
+
+
+**信号量**
+
+应用于线程、进程间同步
+
+（semaphore）相当于初始化值为N的互斥量，可以同时访问共享数据区的线程数量
+
+`sem_t sem`   
+
+`int sem_init(sem_t *sem, int pshared, unsigned int value)`
+
+sem：信号量
+
+pshared：0：用于线程间同步
+
+​                  1：用于进程间同步
+
+value：N值，指定同时访问的线程数
+
+`sem_destroy(sem_t *sem)`
+
+`sem_wait(sem_t *sem)`  一次调用--操作，当信号量为0，再次--就会阻塞（对比pthread_mutex_lock）
+
+`sem_post()`  一次调用++，（对比pthread_mutex_unlock）
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<string.h>
+#include<semaphore.h>
+#define N 10
+/*生产者和消费者-利用信号量实现*/
+void sys_err(const char* str,int ret){
+
+    fprintf(stderr,"%s:%s\n",str,strerror(ret));
+    exit(1);
+}
+int goods[N],hh,tt;
+sem_t empty,full;//empty空格子的数量，full物品的数量
+void* producer(void* arg){
+
+    while(1){
+        sem_wait(&empty);
+        goods[tt]=rand()%100+1;
+        printf("-----the producer produce %d\n",goods[tt]);
+        tt=(tt+1)%N;
+        sem_post(&full);
+        sleep(rand()%3);
+    }   
+    return NULL;
+}
+void* consumer(void* arg){
+
+    while(1){
+        sem_wait(&full);
+        printf("the consumer consume %d\n",goods[hh]);
+        hh=(hh+1)%N;
+        sem_post(&empty);
+        sleep(rand()%3);
+    }
+    return NULL;
+}
+int main(){
+    int ret;
+    srand(time(NULL));
+    pthread_t produce,consume;
+    //初始化信号量
+    sem_init(&empty,0,N);
+    sem_init(&full,0,0);
+    //创建子线程
+    ret=pthread_create(&produce,NULL,producer,NULL);
+    if(ret!=0)
+        sys_err("pthread_create producer error",ret);
+    ret=pthread_create(&consume,NULL,consumer,NULL);
+    if(ret!=0)
+        sys_err("pthread_create consumer error",ret);
+    //回收子线程
+    pthread_join(produce,NULL);
+    pthread_join(consume,NULL);
+    //销毁信号量
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    //结束主线程
+    pthread_exit(NULL);
+    return 0;
+}
+```
 
 
 
@@ -1652,7 +1824,7 @@ struct sigaction {
 
 **内核实现信号捕捉过程：**
 
-![img](/images-AudioVideo/picture2.png)
+![img](images/picture2.png)
 
 
 
