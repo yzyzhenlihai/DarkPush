@@ -12,7 +12,35 @@
 
 **基本概念**
 
-![img](/images/picture1.png)
+![img](images/picture1.png)
+
+ 
+
+**Value-Based Reinforcement Learning**
+
+Deep Q-Network（DQN）
+
+就是用神经网络近似Q^*^函数
+
+如何训练DQN？
+
+利用Temporal Difference（TD） Learning  训练DQN 
+
+![img](images/picture2.png)
+
+
+
+**Policy-Based Reinforcement Learning**
+
+ 
+
+**Actor-Critic Method**
+
+![img](images/picture3.png)
+
+
+
+**疑问？**
 
 这些公式为了消掉某个变量，都是对该变量进行求期望？
 
@@ -28,26 +56,4 @@ OpenAI Gym?
 
 无偏估计？
 
- 
-
-**Value-Based Reinforcement Learning**
-
-Deep Q-Network（DQN）
-
-就是用神经网络近似Q^*^函数
-
-如何训练DQN？
-
-利用Temporal Difference（TD） Learning  训练DQN 
-
-![img](/images/picture2.png)
-
-
-
-**Policy-Based Reinforcement Learning**
-
- 
-
-**Actor-Critic Method**
-
-![img](/images/picture3.png)
+难道Ut的观测值ut，本质上都可以当多U~Π~，V~Π~，Q^*^吗

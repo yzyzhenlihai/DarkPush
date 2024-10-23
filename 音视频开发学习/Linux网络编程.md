@@ -116,9 +116,15 @@ socket：在通信过程中，socket是成对出现的
 
 一个文件描述符指向一个套接字，该套接字内部由内核借助两个缓冲区实现。
 
-![img](/images/picture3.png)
+![img](images/picture3.png)
 
 
+
+
+
+## 半关闭
+
+双方通信中，只有一端关闭通信。 FIN-WAIT2状态（主动关闭端）<---->CLOSE-WAIT状态（被动关闭端）
 
 # Socket编程
 
@@ -132,11 +138,13 @@ socket：在通信过程中，socket是成对出现的
 
 
 
-<img src="/images/picture4.png" alt="img" style="zoom: 67%;" />
+<img src="images/picture4.png" alt="img" style="zoom: 67%;" />
 
-## 网络套接字函数
+##网络编程函数
 
-网络字节序
+### 网络套接字函数
+
+**网络字节序**
 
 ```c
  #include <arpa/inet.h>
@@ -241,6 +249,60 @@ addr：传入参数，服务器的地址结构
 ​	errno = EINTR 慢速系统调用被终端
 
 ​	errno = “其他情况” 异常
+
+
+
+`netstat -apn`  查看网络编程中进程所处的状态。通常结合管道查询指定端口`| grep 8000`
+
+
+
+### 端口复用函数
+
+当服务端主动关闭时，会在TIME-WAIT状态持续2MSL(Maximum Segment Lifetime)的时间，来等待对端的ack，此时的端口依然被占用，无法重启服务器（因为端口被占用，无法bind）
+
+`int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);`
+
+```c
+//一般在地址绑定前设置端口复用
+int opt=1;//设置端口复用
+int ret = setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,(void*)&opt,sizeof(opt));
+```
+
+### 半关闭函数
+
+一个套件字有读缓冲区和写缓冲区，通过下面的函数可以控制缓冲区的关闭，一般来说都直接用`close()`来关闭
+
+**`shutdown()`和`close()`的区别：**
+
+如果用多个进程共享一个文件描述符，`shutdown()`不考虑文件描述符的引用计数，直接关闭文件描述符，但是`close()`每一次调用，引用计数会减1，最后减到0后，文件描述符才会被释放。
+
+`int shutdown(int sockfd, int how);`
+
+how：SHUT_RD关读端	SHUT_WR关写端	SHUT_RDWR关读写端
+
+### 多路IO转接
+
+`int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);`
+
+参数：
+
+nfds：表示在所有需要监听的文件符中，最大的文件描述符再加1。
+
+fd_set：传入传出参数。传入时是要监听的，传出时实际有事件发生的。读、写、异常的套接字集合，本质上是个位图。
+
+timeout：定时阻塞监控时间。传NULL：永远等下去。传timeval：等待固定时间。传timeval都设置为0：检查描述字后立即返回，轮询
+
+返回值：
+
+返回所有文件描述符集合中，发生读写或异常事件的总个数。
+
+```c
+//操作fd_set的函数
+void FD_CLR(int fd, fd_set *set);//将某一个文件描述符清除，一般在客户端关闭后移除。
+int  FD_ISSET(int fd, fd_set *set);//判断文件描述符是否在集合中
+void FD_SET(int fd, fd_set *set);//添加
+void FD_ZERO(fd_set *set);//置0
+```
 
 
 
@@ -362,7 +424,7 @@ int main(){
 }
 ```
 
-**错误处理函数封装思想**
+##错误处理函数封装
 
 将系统调用+错误处理都封装到自定义的函数中，让代码逻辑性更强。
 
@@ -415,6 +477,10 @@ int Bind(int sockfd, const struct sockaddr *addr,socklen_t addrlen){
 
 }
 ```
+
+#高性能服务器
+
+
 
 ## 多进程并发服务器
 
@@ -493,6 +559,16 @@ int main(){
 ```
 
 ##多线程并发服务器
+
+**Bug1：**
+
+将socket文件描述符传入子线程时，`ret=pthread_create(&tid,&attr,pthread_func,(void*)(long)cfd);`上述这种方式将cfd作为参数传入子线程时，出现当多个客户端同时在对服务器进行读写操作时，此时向其中一个客户端进程发送信号终止，会导致所有客户端进程同时结束，服务端进程也因出现**段错误**被结束。
+
+但是利用`ret=pthread_create(&tid,&attr,pthread_func,(void*)&s_in);`将socket文件描述符通过一个结构体指针的方式传入，就不会造成上述的错误。
+
+**解决方式：**
+
+还未解决！！
 
 ```c
 #include "wrap.h"
@@ -586,3 +662,12 @@ int main(){
     return 0;
 ```
 
+
+
+##多路IO转接服务器
+
+### 多路IO转接
+
+不再由应用程序自己监听客户端的连接请求，取而代之由内核替应用程序监听，并报告应用程序，然后应用程序执行相应的动作。这样就将服务端进程解放了出来，不需要阻塞等待客户端的请求（**响应模式**）。
+
+ 
