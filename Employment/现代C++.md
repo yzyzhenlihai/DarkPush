@@ -1,4 +1,4 @@
-#语法
+# 语法
 
 ## 类型转换关键字
 
@@ -50,9 +50,11 @@
 
 
 
-##并行
+## 并行
 
 `std::atomic`  对变量提供原子操作，避免使用`std::mutex`来造成性能开销和复杂性
+
+`std::atomic` 变量不能被拷贝给其他变量，包括临时变量。这是因为 `std::atomic` 的拷贝构造函数被显式删除了，目的是避免拷贝行为带来的线程安全问题。但是可以考虑移动语义`std::move()`来转移所有权
 
 1. **`etch_add`：**
 
@@ -100,7 +102,9 @@
 
 RAII语法的模板类，保证了所有栈对象在声明周期结束时回被销毁，会自动调用`unlock()` 。并且可以显式的调用lock和unlock。如果用到了`std::condition_variable::wait`，则必须用`std::unique_lock`
 
-##函数对象包装
+
+
+## 函数对象包装
 
 \#include\<functional\>
 
@@ -125,7 +129,7 @@ MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 
 
 
-##右值引用
+## 右值引用
 
 `std::move` 将左值转换为右值引用。可以避免不必要的复制操作，特别是当任务对象是较大的或复杂的类型（比如使用了大量资源的对象）时。通过移动，资源的所有权从源对象转移到目标对象，而不是创建一个新副本。
 
@@ -135,7 +139,7 @@ MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 
 ## 类
 
-###类的定义和实现
+### 类的定义和实现
 
 如果你将类的定义和实现都放在头文件中，那么每次在源文件中包含该头文件时，编译器都会看到类的完整定义和成员函数的实现。这会导致一些特定的问题和影响：
 
@@ -146,16 +150,6 @@ MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 **模板类和内联函数**：有时候类的成员函数是模板函数或者内联函数，它们必须在头文件中定义和实现。模板类成员函数在编译时需要实例化，因此必须在头文件中提供实现。这是一个特定的例外，不一定适用于所有类。
 
 
-
-## 函数
-
-`std::search`  下面是原型
-
-template< class ForwardIt, class T >
-
- ForwardIt search( ForwardIt first, ForwardIt last, const T& value );
-
-是一个非常强大的函数，可以帮助你在一个序列中查找一个**单一的元素**或者一个**子序列**。在\<algorithmn\>中
 
 
 
@@ -200,10 +194,128 @@ int main() {
 ```
 
 
+## 函数
+### 字符串
+
+#### search
+
+`std::search`  下面是原型
+
+template< class ForwardIt, class T >
+
+ ForwardIt search( ForwardIt first, ForwardIt last, const T& value );
+
+是一个非常强大的函数，可以帮助你在一个序列中查找一个**单一的元素**或者一个**子序列**。在\<algorithmn\>中
+
+#### strncat
+
+`char *strncat(char *dest, const char *src, size_t n)` 
+
+函数用于将源字符串的最多 `n` 个字符追加到目标字符串的末尾。它的主要作用是连接字符串，且避免目标字符串发生溢出
+
+#### strcspn
+
+`strcspn` 是 C 标准库中的一个函数，用于查找一个字符串中第一次出现指定字符集合中的任何字符的位置。
+
+它返回的是第一个匹配字符的索引位置
+
+`size_t strcspn(const char *s1, const char *s2)`
+
+#### snprintf
+
+`int snprintf(char *str, size_t size, const char *format, ...)` 向指定地址写入指定大小的内容
+
+```c++
+snprintf(newFile, LOG_NAME_LEN - 72, "%s/%s%s", path_, tail, suffix_)
+```
+
+#### vsprintf
+
+这个函数要搭配`va_list`使用，`va_list` 可以用来接收可变参数（比如printf中的）
+
+```c++
+//写入自定义参数
+/*
+	日志系统的实现的部分代码
+	format：传入个格式化字符串（带有什么%s,%d这种的）
+	...   ：表示可变参数
+	va_list：用来接收可变参数，本质上是个指针
+*/
+//void Log::Write(int level,const char* format, ...)  
+va_list valist;
+va_start(valist,format);//利用va_start，靠format的位置来定位可变参数的位置，(format和可变参数之间是有联系的)
+int m=vsnprintf(buffer_ptr,buffer_size,format,valist);//写入缓冲区或其他容器
+va_end(valist);//利用va_end释放va_list变量
+```
+
+
+
+
+
+### 系统时间
+
+`localtime(&tSec)` 将转化为当前时间
+
+```c++
+time_t timer = time(nullptr);//获得系统时间
+struct tm *sysTime = localtime(&timer);//获得当前的时间的结构体
+char fileName[LOG_NAME_LEN] = {0};
+snprintf(fileName, LOG_NAME_LEN - 1, "%s/%04d_%02d_%02d%s", 
+         path_, t.tm_year + 1900, t.tm_mon + 1,t.tm_mday, suffix_);
+
+struct tm {
+    int tm_sec;   // 秒 [0, 60] (包含闰秒)
+    int tm_min;   // 分 [0, 59]
+    int tm_hour;  // 时 [0, 23]
+    int tm_mday;  // 一个月中的天数 [1, 31]
+    int tm_mon;   // 月份 [0, 11] (0 = 一月)
+    int tm_year;  // 自 1900 年以来的年数
+    int tm_wday;  // 一周中的天数 [0, 6] (0 = 星期日)
+    int tm_yday;  // 一年中的天数 [0, 365]
+    int tm_isdst; // 是否是夏令时 (> 0 是, 0 否, < 0 不确定)
+};
+
+```
+
+
+
+### 文件操作
+
+#### 写文件
+
+`fputs(text, FILE* file);  // 写入字符串`  
+
+` fwrite(&data, sizeof(data), 1, FILE* file);  // 写入二进制数据`
+
+
 
 # 设计思想
 
+## RAII机制
 
+RAII（Resource Acquisition Is Initialization），资源获取即初始化。是一种内存管理的机制，用对象管理资源，利用的就是C++构造的对象最终会被对象的析构函数销毁的原则（用对象来管理资源的创建和销毁，如线程池、连接池）。
+
+ 
+
+设计模式根据工作的目的，分为创建型模式、结构型模式和行为型模式三类。
+
+创建型模式：**单例模式**、**工厂方法模式**、**抽象工厂模式**、创建者模式、原型模式。
+
+结构型模式：适配器模式、**代理模式**、**装饰器模式**、外观模式、桥接模式、组合模式、享元模式。
+
+行为型模式：策略模式、模板方法模式、**观察者模式**、迭代子模式、**责任链模式**、命令模式、备忘录模式、状态模式、访问者模式、中介者模式、解释器模式。
+
+
+
+## 观察者模式
+
+观察者模式通常由两个对象组成：观察者和被观察者。当被观察者状态发生改变时，它会通知所有的观察者对象，使他们能够及时做出响应，所以也被称作“发布-订阅模式”。被观察者会存有观察者列表，当被观察者状态发生变化时，会挨个通知观察者，让观察者做出响应。
+
+下面以**报纸**和**报纸的订阅者**为例，假设你在订阅一份报纸，每天早上送到你门口。你订阅的这份报纸就是被观察者。你和其他的订阅者是观察者。当报纸被送到你门口时，它会自动通知所有的订阅者，让他们知道这份报纸已经到了。
+
+<img src="./images/picture5.png" style="zoom: 50%;" />
+
+可以发现UML类图中，我们都是继承一个**抽象类**的，这样子可以实例化不同的观察者和被观察者，对不同观察者实现不同的响应方式。
 
 
 

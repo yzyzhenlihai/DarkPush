@@ -1,4 +1,4 @@
-#c++做题
+c++做题
 
 1. <iomanip>使用setprecision(n)可控制输出流显示**浮点数的数字**个数,setprecision(n)与setiosflags(ios::fixed)，setprecision(n)与setiosflags(ios::fixed)**合用**，可以控制小数点右边的数字个数，可以控制小数点右边的数字个数
 
@@ -1448,7 +1448,7 @@ git rebase "分支名"。和git merge类似，这里是改变该分支的基准�
 3. git commit -m " " 推送至本地仓库
 4. ssh -T git@github.com连接github
 5. 复制github仓库中的ssh地址。使用命令 git remote add origin  "ssh地址"    连接至仓库
-6. git push -u origin master推送至远程仓库
+6. git push -u  feature-branch:remote-feature   本地分支推送至远程分支
 
 
 
@@ -1470,7 +1470,7 @@ git rebase "分支名"。和git merge类似，这里是改变该分支的基准�
 
 ```mipsasm
 git branch  develop
-git push -u origin develop
+git push -u origin develop   //push -u 会同时建立本地分支和远程分支的追踪关系
 ```
 
 现在线上就有两个分支master 和 develop 现在这两个分支里面都是空的
@@ -1480,7 +1480,7 @@ git push -u origin develop
 一、二步完成后，任何一个参与该项目的开发人员首先要做的就是从develop分支上切一个新分支进行功能开发
 
 ```xml
-git checkout -b <本地分支名 feature/***> <origin/develop>
+git checkout -b <本地分支名 feature/***> <origin/develop>//如果远程分支存在，但本地没有该分支，通过这种方式创建追踪关系
 或者
 git fetch origin 远程分支名:本地分支名
 git branch --set-upstream-to=origin/远程分支名    本地分支名

@@ -83,20 +83,30 @@ flitered_objects=$(filter-out %.c $object)
 `cmake .. -G "Unix Makefiles"` （第一次运行cmake时）
 
 ```cmake
-#方式1
-cmake_minimum_required(VERSION 3.10)  #确定cmake最低需求的版本
 
-project(Hello)   #构建的可执行文件的名称
+cmake_minimum_required(VERSION 3.10)
+project(main)
+add_subdirectory(src)
 
-##当有大量源文件时，可以利用aux_source_directory来获得指定目录下所有的源文件，并存到一个DIR_SRCS变量中
-##aux_source_directory (<dir> <variable>)
-aux_source_directory(./src DIR_SRCS)
+# 添加编译选项
+add_compile_options(-std=c++11 -Wall)
+# 引入头文件位置
+include_directories(${PROJECT_SOURCE_DIR}/../include )
+include_directories(/usr/local/protobuf/include) 
+# 引入源文件位置
+aux_source_directory(. MAIN_SRC)
 
-#当头文件和源文件不在同一个文件夹下，需要指出.h的位置
-include_directories(./include)
+# 设置可执行文件的生成位置
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../bin)
 
-#第一个参数是可执行文件的名称，第二个参数是源文件
-add_executable(Hello ${DIR_SRCS})  
+# 设置静态库路径
+set(Protobuf_LIBRARIES "/usr/local/protobuf/lib/libprotobuf.a")
+# 生成可执行文件
+add_executable(main ${MAIN_SRC})
+
+# 连接静态库
+target_link_libraries(main ${Protobuf_LIBRARIES})
+
 ```
 
 
@@ -351,7 +361,7 @@ s 表示将插入的成员作为符号表保存。
 
 `start` 不加断点，一步一步执行看看
 
-`finish` 结束当前函数
+`finish` 结束当前函数	
 
 `set args` 设置main函数命令行参数
 
