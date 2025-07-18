@@ -1016,6 +1016,9 @@ df=df.sort_index(ascending=True,axis=0)#axis=0对行索引排序
 
 #判断DataFrame是否为空
 df.empty
+
+# 对某一列分类变量计数
+category_counts = df['列名'].value_counts()
 ```
 
 ## numpy库
@@ -1514,7 +1517,7 @@ git branch -d feature/** //删除本地的分支
 git checkout -b <本地分支名realse-0.1> <远程分支名develop>//注意这个realse-tagNo分支的功能是对发布的代码进行改善的地方
 ```
 
-创建这个分支相当于测试环境修改，改好后就需要跟新master和develop,然后删除分支
+创建这个分支相当于测试环境修改，改好后就需要更新master和develop,然后删除分支
 
 ```cpp
 git checkout  master//切到master分支

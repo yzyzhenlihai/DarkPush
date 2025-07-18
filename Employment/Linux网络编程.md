@@ -674,7 +674,11 @@ int main(){
 
  开源、精简、跨平台（Windows、Linux、maxos、unix）、专注于网络通信
 
+## 信号
 
+##### error
+
+1. SIGPIPE信号。当客户端向服务端发送完数据后直接关闭客户端，服务器返回消息的时候，客户端会收到SIGPIPE信号。因为TCP是全双工通信，client端调用close，只能关闭发送的通道，依然可以接收数据，如果此时服务端发送数据过来，客户端收到SIGPIPE信号可能会崩溃，所以我们需要忽略SIGPIPE信号。`signal(SIGPIPE, SIG_IGN);`
 
 #高性能服务器
 

@@ -109,6 +109,45 @@ target_link_libraries(main ${Protobuf_LIBRARIES})
 
 ```
 
+```cmake
+
+
+
+# 查找 pkg-config
+# pkg-config 是一个系统工具，用于检索已安装库的编译和链接信息（如头文件路径、库路径和依赖）。
+find_package(PkgConfig REQUIRED) 
+
+# 查找 FFmpeg 库
+# pkg_check_modules 调用 pkg-config 查找对应的 .pc 文件
+# 每个 pkg_check_modules 调用会生成变量，例如：
+# ${LIBAVCODEC_LIBRARIES}：链接所需的库（通常是 -lavcodec）。
+# ${LIBAVCODEC_INCLUDE_DIRS}：头文件路径（如 /usr/include/libavcodec）
+# ${LIBAVCODEC_LDFLAGS}：链接器标志（如 -L/usr/lib -lavcodec）
+pkg_check_modules(LIBAVCODEC REQUIRED libavcodec)
+pkg_check_modules(LIBAVFORMAT REQUIRED libavformat)
+pkg_check_modules(LIBAVDEVICE REQUIRED libavdevice)
+pkg_check_modules(LIBAVUTIL REQUIRED libavutil)
+
+# 链接 FFmpeg 库和外部依赖
+# 顺序很重要，因为 FFmpeg 库有依赖关系：
+# libavdevice 依赖 libavformat。
+# libavformat 依赖 libavcodec。
+# libavcodec 依赖 libavutil。
+# 因此，链接时按此顺序排列避免符号解析问题。
+target_link_libraries(streamServer PRIVATE
+    ${LIBAVDEVICE_LIBRARIES}
+    ${LIBAVFORMAT_LIBRARIES}
+    ${LIBAVCODEC_LIBRARIES}
+    ${LIBAVUTIL_LIBRARIES}
+    -pthread
+    -lm
+    -lz
+)
+
+# 确保静态链接
+target_link_options(streamServer PRIVATE ${LIBAVCODEC_LDFLAGS} ${LIBAVFORMAT_LDFLAGS} ${LIBAVDEVICE_LDFLAGS} ${LIBAVUTIL_LDFLAGS})
+```
+
 
 
 ## C++使用静态库
