@@ -1,173 +1,3 @@
-##  Makefile
-
-```makefile
-#编写makefile文件
-ALL:testfile   #ALL 确定最终目标文件
-#方式1
-testfiles: main.cpp function.cpp
-	g++ -o testfiles main.cpp function.cpp
-
-#方式2，在文件中定义宏和变量
-CXX = g++
-TARGET= testfiles
-OBJ = main.o function.o
-$(TARGET):$(OBJ)
-	$(CXX) -o $(TARGET) $(OBJ)
-
-main.o:main.cpp
-	$(CXX) -c main.cpp
-function.o:function.cpp
-	$(CXX) -c function.cpp
-
-#方式3，对方式2进行修改
-#$@: the target file
-#$^: all the prerequisites
-#$<: the first prerequisites
-
-CXX = g++
-TARGET= testfiles
-OBJ = main.o function.o
-$(TARGET):$(OBJ)
-	$(CXX) -o $@ $^
-
-%.o:%.cpp
-	$(CXX) -c $^
-
-#方式4，利用PHONY自动清除已经产生的文件，比如.o
-
-CXX = g++
-TARGET= testfiles.exe
-OBJ = main.o function.o
-$(TARGET):$(OBJ)
-	$(CXX) -o $@ $^
-
-
-%.o:%.cpp
-	$(CXX) -c $<
-
-.PHONY:clean
-clean:
-	del *.o $(TARGET)
-
-#方式5，利用自带函数获得文件
-CXX = g++
-TARGET = testfiles.exe
-CFLAGES = -c -Wall  #-Wall展示编译的warning
-SRC = $(wildcard ./*.cpp)#wildcard-找到当前路径下所有的.cpp文件
-OBJ = $(patsubst %.cpp,%.o,$(SRC))#patsubst-将.cpp文件替换为.o文件
-$(TARGET):$(OBJ)
-	$(CXX) -o $(TARGET) $(OBJ)
-%.o:%.cpp
-	$(CXX) $(CFLAGES) $<
-
-.PHONY:clean     #伪目标
-clean:  
-	del *.o $(TARGET) 
-
-#其他函数
-#1.过滤出不以.c结尾的字符串
-object=foo.o bar.o baz.c
-flitered_objects=$(filter-out %.c $object)
-```
-
-`make -f m1` 	指定文件执行make命令，可能有些makefile文件叫xxx.mk，所以需要自己指定
-
-## Cmake
-
-问题：Windows下CMake不能生成makefile的问题
-
-解决方案：可能是由于安装了Visual Studio，也可能是windows10默认，CMake会生成`MSVC`解决方案，在构建目录中检查有 .sln 文件。
-
-指定解决方案是Unix 平台的Makefiles
-
-`cmake .. -G "Unix Makefiles"` （第一次运行cmake时）
-
-```cmake
-
-cmake_minimum_required(VERSION 3.10)
-project(main)
-add_subdirectory(src)
-
-# 添加编译选项
-add_compile_options(-std=c++11 -Wall)
-# 引入头文件位置
-include_directories(${PROJECT_SOURCE_DIR}/../include )
-include_directories(/usr/local/protobuf/include) 
-# 引入源文件位置
-aux_source_directory(. MAIN_SRC)
-
-# 设置可执行文件的生成位置
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../bin)
-
-# 设置静态库路径
-set(Protobuf_LIBRARIES "/usr/local/protobuf/lib/libprotobuf.a")
-# 生成可执行文件
-add_executable(main ${MAIN_SRC})
-
-# 连接静态库
-target_link_libraries(main ${Protobuf_LIBRARIES})
-
-```
-
-```cmake
-
-
-
-# 查找 pkg-config
-# pkg-config 是一个系统工具，用于检索已安装库的编译和链接信息（如头文件路径、库路径和依赖）。
-find_package(PkgConfig REQUIRED) 
-
-# 查找 FFmpeg 库
-# pkg_check_modules 调用 pkg-config 查找对应的 .pc 文件
-# 每个 pkg_check_modules 调用会生成变量，例如：
-# ${LIBAVCODEC_LIBRARIES}：链接所需的库（通常是 -lavcodec）。
-# ${LIBAVCODEC_INCLUDE_DIRS}：头文件路径（如 /usr/include/libavcodec）
-# ${LIBAVCODEC_LDFLAGS}：链接器标志（如 -L/usr/lib -lavcodec）
-pkg_check_modules(LIBAVCODEC REQUIRED libavcodec)
-pkg_check_modules(LIBAVFORMAT REQUIRED libavformat)
-pkg_check_modules(LIBAVDEVICE REQUIRED libavdevice)
-pkg_check_modules(LIBAVUTIL REQUIRED libavutil)
-
-# 链接 FFmpeg 库和外部依赖
-# 顺序很重要，因为 FFmpeg 库有依赖关系：
-# libavdevice 依赖 libavformat。
-# libavformat 依赖 libavcodec。
-# libavcodec 依赖 libavutil。
-# 因此，链接时按此顺序排列避免符号解析问题。
-target_link_libraries(streamServer PRIVATE
-    ${LIBAVDEVICE_LIBRARIES}
-    ${LIBAVFORMAT_LIBRARIES}
-    ${LIBAVCODEC_LIBRARIES}
-    ${LIBAVUTIL_LIBRARIES}
-    -pthread
-    -lm
-    -lz
-)
-
-# 确保静态链接
-target_link_options(streamServer PRIVATE ${LIBAVCODEC_LDFLAGS} ${LIBAVFORMAT_LDFLAGS} ${LIBAVDEVICE_LDFLAGS} ${LIBAVUTIL_LDFLAGS})
-```
-
-
-
-## C++使用静态库
-
-在Linux下使用C++静态库的步骤如下：
-
-编写代码并编译成目标文件（.o），比如**`g++ -c test.cpp -o test.o`**。
-
-然后使用**ar命令**将编译生成的.o文件打包成静态库文件（.a），比如 **`ar rcs libtest.a test.o`**。
-
-ar是一个用于创建、修改和提取归档文件的命令行工具。归档文件是一种将多个文件组合成单个文件的方式，通常用于将多个目标文件组合为一个库文件（如静态库）或者打包多个文件以备份或分发。
-r 表示插入新成员（如果原来不存在的话）；
-c 表示创建新档案；
-s 表示将插入的成员作为符号表保存。
-编写使用静态库的代码，并链接静态库，比如 **`g++ -o main main.cpp -L. -ltest`**。
-
--L. 表示在当前目录搜索库文件；
--lmylib 表示链接名为 libmylib.a 的静态库。
-运行可执行程序，比如 ./test。
-
 ## Linux系统编程
 
 ### Linux常用指令
@@ -242,7 +72,16 @@ s 表示将插入的成员作为符号表保存。
 
 `ifconfig`  查看ip
 
+`ss` 查看当前的网络连接信息
 
+常用选项:
+
+- `-t`: 显示 TCP 协议的 sockets。
+- `-u`: 显示 UDP 协议的 sockets。
+- `-l`: 只显示监听状态的 sockets (listening sockets)。
+- `-p`: 显示使用该 socket 的进程信息。
+- `-n`: 不解析服务名称，直接显示数字形式的端口号和 IP 地址。
+- `-a`: 显示所有状态的 sockets (包括监听和非监听)。
 
 **其他命令**
 

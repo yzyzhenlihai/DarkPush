@@ -1,3 +1,246 @@
+# VScode环境配置
+
+## task.json文件
+
+`tasks.json` 文件负责构建（编译和链接）您的代码
+
+```c++
+{   
+    "version": "2.0.0",
+    "options": {
+        "cwd": "${workspaceFolder}/build"
+    },
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "cmake",
+            "command": "cmake",
+            "args": [
+                ".."
+            ]
+        },
+        {
+            "label": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "make",
+            "args": [
+
+            ]
+        },
+        {
+            "label": "Build",
+			"dependsOrder": "sequence", // 按列出的顺序执行任务依赖项
+            "dependsOn":[
+                "cmake",
+                "make"
+            ]
+        }
+    ]
+
+}
+```
+
+
+
+## launch.json文件
+
+`launch.json` 文件负责如何启动和调试您的程序
+
+```c++
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "lldb 启动",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/rtsp_server", //需要修改，指定可执行文件的位置
+            //"cwd": "${fileDirname}"
+            //cwd(Current Working Directory/当前工作目录),
+            //${fileDirname} 是一个VS Code变量，它代表 您当前打开并激活的那个文件所在的目录。
+            //${workspaceFolder} 变量始终代表您在VS Code中打开的项目的根文件夹。
+            "cwd": "${workspaceFolder}"   
+        }
+
+    
+    ]
+}
+```
+
+
+
+#  Makefile
+
+```makefile
+#编写makefile文件
+ALL:testfile   #ALL 确定最终目标文件
+#方式1
+testfiles: main.cpp function.cpp
+	g++ -o testfiles main.cpp function.cpp
+
+#方式2，在文件中定义宏和变量
+CXX = g++
+TARGET= testfiles
+OBJ = main.o function.o
+$(TARGET):$(OBJ)
+	$(CXX) -o $(TARGET) $(OBJ)
+
+main.o:main.cpp
+	$(CXX) -c main.cpp
+function.o:function.cpp
+	$(CXX) -c function.cpp
+
+#方式3，对方式2进行修改
+#$@: the target file
+#$^: all the prerequisites
+#$<: the first prerequisites
+
+CXX = g++
+TARGET= testfiles
+OBJ = main.o function.o
+$(TARGET):$(OBJ)
+	$(CXX) -o $@ $^
+
+%.o:%.cpp
+	$(CXX) -c $^
+
+#方式4，利用PHONY自动清除已经产生的文件，比如.o
+
+CXX = g++
+TARGET= testfiles.exe
+OBJ = main.o function.o
+$(TARGET):$(OBJ)
+	$(CXX) -o $@ $^
+
+
+%.o:%.cpp
+	$(CXX) -c $<
+
+.PHONY:clean
+clean:
+	del *.o $(TARGET)
+
+#方式5，利用自带函数获得文件
+CXX = g++
+TARGET = testfiles.exe
+CFLAGES = -c -Wall  #-Wall展示编译的warning
+SRC = $(wildcard ./*.cpp)#wildcard-找到当前路径下所有的.cpp文件
+OBJ = $(patsubst %.cpp,%.o,$(SRC))#patsubst-将.cpp文件替换为.o文件
+$(TARGET):$(OBJ)
+	$(CXX) -o $(TARGET) $(OBJ)
+%.o:%.cpp
+	$(CXX) $(CFLAGES) $<
+
+.PHONY:clean     #伪目标
+clean:  
+	del *.o $(TARGET) 
+
+#其他函数
+#1.过滤出不以.c结尾的字符串
+object=foo.o bar.o baz.c
+flitered_objects=$(filter-out %.c $object)
+```
+
+`make -f m1` 	指定文件执行make命令，可能有些makefile文件叫xxx.mk，所以需要自己指定
+
+# Cmake
+
+问题：Windows下CMake不能生成makefile的问题
+
+解决方案：可能是由于安装了Visual Studio，也可能是windows10默认，CMake会生成`MSVC`解决方案，在构建目录中检查有 .sln 文件。
+
+指定解决方案是Unix 平台的Makefiles
+
+`cmake .. -G "Unix Makefiles"` （第一次运行cmake时）
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(main)
+add_subdirectory(src)
+
+# 添加编译选项
+add_compile_options(-std=c++11 -Wall -g)
+# 引入头文件位置
+include_directories(${PROJECT_SOURCE_DIR}/../include )
+include_directories(/usr/local/protobuf/include) 
+# 引入源文件位置
+aux_source_directory(. MAIN_SRC)
+
+# 设置可执行文件的生成位置
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../bin)
+
+# 设置静态库路径
+set(Protobuf_LIBRARIES "/usr/local/protobuf/lib/libprotobuf.a")
+# 生成可执行文件
+add_executable(main ${MAIN_SRC})
+
+# 连接静态库
+target_link_libraries(main ${Protobuf_LIBRARIES})
+
+```
+
+```cmake
+# 查找 pkg-config
+# pkg-config 是一个系统工具，用于检索已安装库的编译和链接信息（如头文件路径、库路径和依赖）。
+find_package(PkgConfig REQUIRED) 
+
+# 查找 FFmpeg 库
+# pkg_check_modules 调用 pkg-config 查找对应的 .pc 文件
+# 每个 pkg_check_modules 调用会生成变量，例如：
+# ${LIBAVCODEC_LIBRARIES}：链接所需的库（通常是 -lavcodec）。
+# ${LIBAVCODEC_INCLUDE_DIRS}：头文件路径（如 /usr/include/libavcodec）
+# ${LIBAVCODEC_LDFLAGS}：链接器标志（如 -L/usr/lib -lavcodec）
+pkg_check_modules(LIBAVCODEC REQUIRED libavcodec)
+pkg_check_modules(LIBAVFORMAT REQUIRED libavformat)
+pkg_check_modules(LIBAVDEVICE REQUIRED libavdevice)
+pkg_check_modules(LIBAVUTIL REQUIRED libavutil)
+
+# 链接 FFmpeg 库和外部依赖
+# 顺序很重要，因为 FFmpeg 库有依赖关系：
+# libavdevice 依赖 libavformat。
+# libavformat 依赖 libavcodec。
+# libavcodec 依赖 libavutil。
+# 因此，链接时按此顺序排列避免符号解析问题。
+target_link_libraries(streamServer PRIVATE
+    ${LIBAVDEVICE_LIBRARIES}
+    ${LIBAVFORMAT_LIBRARIES}
+    ${LIBAVCODEC_LIBRARIES}
+    ${LIBAVUTIL_LIBRARIES}
+    -pthread
+    -lm
+    -lz
+)
+
+# 确保静态链接
+target_link_options(streamServer PRIVATE ${LIBAVCODEC_LDFLAGS} ${LIBAVFORMAT_LDFLAGS} ${LIBAVDEVICE_LDFLAGS} ${LIBAVUTIL_LDFLAGS})
+```
+
+
+
+# C++使用静态库
+
+在Linux下使用C++静态库的步骤如下：
+
+编写代码并编译成目标文件（.o），比如**`g++ -c test.cpp -o test.o`**。
+
+然后使用**ar命令**将编译生成的.o文件打包成静态库文件（.a），比如 **`ar rcs libtest.a test.o`**。
+
+ar是一个用于创建、修改和提取归档文件的命令行工具。归档文件是一种将多个文件组合成单个文件的方式，通常用于将多个目标文件组合为一个库文件（如静态库）或者打包多个文件以备份或分发。
+r 表示插入新成员（如果原来不存在的话）；
+c 表示创建新档案；
+s 表示将插入的成员作为符号表保存。
+编写使用静态库的代码，并链接静态库，比如 **`g++ -o main main.cpp -L. -ltest`**。
+
+-L. 表示在当前目录搜索库文件；
+-lmylib 表示链接名为 libmylib.a 的静态库。
+运行可执行程序，比如 ./test。
+
 # 语法
 
 ## 类型转换关键字
@@ -23,24 +266,71 @@
 
 通过`get()`函数可以获得智能指针管理的指针，不会转移所有权，智能指针仍然负责在适当时候释放资源。
 
-1. `std::shared_ptr`  shared_ptr顾名思义是多个指针指向一块内存,被管理对象有一个**引用计数**，这个计数记录在每个指针上，几个shared_ptr指向它，这个数字就是几，当没有任何shared_ptr指向它时，引用计数为0，这时，自动释放对象。但是这里会出现一个问题，如下面的代码所示:
+### share_ptr
 
-   ```c++
-   int main(int argc, const char * argv[]) {
-       auto p1 = new Test; // 划分堆空间
-       std::shared_ptr<Test> sp(p1); // 创建智能指针
-       std::shared_ptr<Test> sp2(p1); // 创建另一个智能指针
-       return 0;
-   }
-   ```
+`std::shared_ptr`  shared_ptr顾名思义是多个指针指向一块内存,被管理对象有一个**引用计数**，这个计数记录在每个指针上，几个shared_ptr指向它，这个数字就是几，当没有任何shared_ptr指向它时，引用计数为0，这时，自动释放对象。但是这里会出现一个问题，如下面的代码所示:
 
-   这段程序会抛出异常 **double free detected**，此处用了两个智能指针管理同一块内存，因为sp 和sp2不知道彼此的存在，所以也会重复释放，正确的做法是用已经创建的智能指针sp再去初始化sp2，让它们处于同一套内存管理体系。
+```c++
+int main(int argc, const char * argv[]) {
+    auto p1 = new Test; // 划分堆空间
+    std::shared_ptr<Test> sp(p1); // 创建智能指针
+    std::shared_ptr<Test> sp2(p1); // 创建另一个智能指针
+    return 0;
+}
+```
 
-   所以这里就引入了`std::make_shared<T>(args)` 去创建对象，而不是用`new`，这样就可以防止我们去使用原始指针创建多个引用计数体系。
+这段程序会抛出异常 **double free detected**，此处用了两个智能指针管理同一块内存，因为sp 和sp2不知道彼此的存在，所以也会重复释放，正确的做法是用已经创建的智能指针sp再去初始化sp2，让它们处于同一套内存管理体系。
 
-2. 
+所以这里就引入了`std::make_shared<T>(args)` 去创建对象，而不是用`new`，这样就可以防止我们去使用原始指针创建多个引用计数体系。
+
+```c++
+/*
+	C++智能指针与C语言中一种常见技巧“柔性数组成员”（Flexible Array Member）的交互,无法通过make_shared直接与”柔性数组成员“技巧配合使用。
+	此时可以自定义删除器: std::shared_ptr 的强大之处不仅在于引用计数，还在于它能通过自定义删除器与各种C风格的资源管理（malloc/free, fopen/fclose 等）无缝集成。这是处理这类问题的标准C++方式。
+	
+*/
+uint8_t* buffer = new uint8_t[totalSize];
+//创建shared_ptr，并提供自定义的删除器
+rtpPacket = std::shared_ptr<RtpPacket>(
+    reinterpret_cast<RtpPacket*>(buffer),
+    [buffer](RtpPacket* ptr){
+        delete[] buffer;
+    }
+);
+```
 
 
+
+### weak_ptr
+
+`weak_ptr` 的作用：解决共享所有权中的悬空指针问题，不增加引用计数。适合在缓存系统和观察者模式中使用。
+
+**观察者模式**中，核心问题是：被观察者（Subject）需要持有观察者（Observer）的引用，但**不能影响观察者的生命周期**。
+如果被观察者持有`shared_ptr<Observer>`，会导致观察者无法释放（除非手动解除注册），而`weak_ptr`可以完美解决这一问题。
+
+```c++
+// Subject（被观察者）
+class Subject {
+    std::vector<std::weak_ptr<Observer>> observers; // 关键：用 weak_ptr 持有观察者
+public:
+    void addObserver(std::shared_ptr<Observer> obs) {
+        observers.emplace_back(obs); // 存储弱引用
+    }
+
+    void notify() {
+        for (auto it = observers.begin(); it != observers.end(); ) {
+            if (auto obs = it->lock()) { // 尝试升级为 shared_ptr
+                obs->update(); // 通知有效的观察者
+                ++it;
+            } else {
+                it = observers.erase(it); // 自动清理已销毁的观察者
+            }
+        }
+    }
+};
+```
+
+**缓存系统**场景与观察者模式类似，缓存通常不希望长期持有对象的所有权（否则缓存会阻止对象释放）。使用 `weak_ptr` 可以检查对象是否已被销毁（通过 `lock()` 获取 `shared_ptr`），若对象不存在则重新加载。
 
 
 
@@ -54,7 +344,7 @@
 
 
 
-## 并行
+## 多线程
 
 `std::atomic`  对变量提供原子操作，避免使用`std::mutex`来造成性能开销和复杂性
 
@@ -106,6 +396,31 @@
 
 RAII语法的模板类，保证了所有栈对象在声明周期结束时回被销毁，会自动调用`unlock()` 。并且可以显式的调用lock和unlock。如果用到了`std::condition_variable::wait`，则必须用`std::unique_lock`
 
+C++ 的 `std::condition_variable::wait` 有一个重载版本，它接受一个lambda表达式（或任何可调用对象）作为“唤醒条件”。这是处理“虚假唤醒”和“退出”条件的标准方法。
+
+```c++
+void ThreadPool::loop(){
+    while(true){
+        Task task;
+        {
+            std::unique_lock<std::mutex> locker(mMtx);
+            // 线程会一直在此沉睡，直到 "队列不为空" 或 "被通知退出"
+            mCon.wait(locker, [this]{
+                return !mTaskQueue.empty() || mQuit;
+            });
+            if(mQuit && mTaskQueue.empty()){
+                return;
+            }
+            task = mTaskQueue.front();
+            mTaskQueue.pop();
+        }
+        task.handleTask();
+    }
+}
+```
+
+
+
 
 
 ## 函数对象包装
@@ -131,7 +446,7 @@ MyClass obj = 42; // 隐式转换，会调用 MyClass(int)
 MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 ```
 
-
+**占位符的使用：**需显式引入`std::placeholders`命名空间，否则需使用完整名称（如`std::placeholders::_1`）
 
 ## 右值引用
 
@@ -159,6 +474,10 @@ MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 
 **定义和初始化：** 非静态成员变量的初始化顺序和类中定义的顺序一致，与构造函数的初始化列表顺序无关。
 
+### 类的继承
+
+如果你打算多态地使用这个类，并且通过基类指针来 `delete` 派生类对象，那么基类必须有一个虚析构函数。 否则，将会导致未定义行为，这通常表现为严重的内存泄漏。C++社区有一个非常著名的“黄金法则”： 如果你的类中包含任何 `virtual`（虚）函数，你就应该（必须）为它声明一个 `virtual`（虚）析构函数。
+
 ## Const关键字
 
 1. **非静态const成员变量**，需要在类声明阶段通过构造函数初始化。但是在C++11之后，可以直接在类定义阶段初始化，但是在类声明阶段依然可以覆盖。
@@ -166,7 +485,7 @@ MyClass obj2 = MyClass(42); // 必须显式调用构造函数
 
 
 
-
+###### 
 
 ## 正则表达式
 
@@ -213,6 +532,8 @@ int main() {
 ### 字符串
 
 #### search
+
+\#include<algorithm>
 
 `std::search`  下面是原型
 
@@ -264,6 +585,45 @@ va_end(valist);//利用va_end释放va_list变量
 ```
 
 
+
+#### stringstream
+
+\#include<stringstream>
+
+`stringstream` + `getline` 组合可以对字符串进行分析，在构造时，会创建原始数据的内部副本，所有操作都在副本上进行，原始数据安然无恙。**线程安全**，每个线程都可以创建自己的`stringstream`对象，它们的状态互不干扰。代替`strtok`这种古老危险的C函数
+
+```c++
+/*
+下面是使用stringstream解析RTSP请求的部分代码
+*/
+
+//使用stringstream逐行解析比strtok安全
+std::stringstream ss(message);
+std::string line;
+while(std::getline(ss, line)){
+    if(!line.empty() && line.back()=='\r') line.pop_back();
+    if(line.find("OPTIONS") == 0 || line.find("DESCRIBE") == 0 ||
+        line.find("SETUP") == 0 || line.find("PLAY")==0){
+        sscanf(line.c_str(), "%s %s %s", method, url, version);   
+    }else if(line.find("CSeq:")==0){
+        sscanf(line.c_str(),"CSeq: %d", &CSeq);
+    }else if(line.find("Transport:")==0){
+        char* p = strstr(line.data(), "client_port=");
+        if(p) sscanf(p, "client_port=%d_%d", &clientRTP, &clientRTCP);
+
+    }
+}
+
+/*
+下面是使用stringstream构造SETUP请求响应的代码
+*/
+std::stringstream ss;
+ss<<"RTSP/1.0 200 OK\r\n";
+ss<<"CSeq: "<<CSeq<<"\r\n";
+ss<<"Transport: RTP/AVP;unicast;client_port="<<clientRTP<<"-"<<clientRTP+1<<";server_port="<<serverRTPPort_<<"-"<<serverRTCPPort_<<"\r\n";
+ss<<"Session: 65535\r\n\r\n";
+sendBuf=ss.str();
+```
 
 
 
@@ -359,10 +719,6 @@ RAII（Resource Acquisition Is Initialization），资源获取即初始化。�
 
 可以发现UML类图中，我们都是继承一个**抽象类**的，这样子可以实例化不同的观察者和被观察者，对不同观察者实现不同的响应方式。
 
-
-
-
-
 ```c++
 uint8_t *unpack_dns(uint8_t *src) {   
     char *buf, *dst;    
@@ -377,3 +733,284 @@ uint8_t *unpack_dns(uint8_t *src) {
 }
 ```
 
+## 工厂模式
+
+简单工厂模式(Simple Factory Pattern)需要定义一个工厂类，它可以根据参数的不同返回不同类的实例，被创建的实例通常都具有共同的父类。因为在简单工厂模式中用于创建实例的方法是**静态**(static)方法，因此简单工厂模式又被称为静态工厂方法(Static Factory Method)模式，它属于**类创建型模式**。
+
+**使用场景：**
+
+- 工厂类负责创建的对象比较少，由于创建的对象较少，不会造成工厂方法中的业务逻辑太过复杂。
+- 客户端只知道传入工厂类的参数，对于如何创建对象并不关心。
+- 典型应用：Calendar 类获取日历类对象、JDBC 获取数据库连接、Logback 中的 LoggerFactory 获取 Logger 对象
+
+```java
+// Car 接口
+public interface Car {
+    void drive();
+}
+// 具体 Car 类
+public class Sedan implements Car {
+    @Override
+    public void drive() {
+        System.out.println("Sedan is driving");
+    }
+}
+
+public class Truck implements Car {
+    @Override
+    public void drive() {
+        System.out.println("Truck is driving");
+    }
+}
+// 工厂类
+public class CarFactory {
+    public static Car createCar(String type) {
+        if ("sedan".equalsIgnoreCase(type)) {
+            return new Sedan();
+        } else if ("truck".equalsIgnoreCase(type)) {
+            return new Truck();
+        }
+        throw new IllegalArgumentException("Unknown car type: " + type);
+    }
+}
+
+```
+
+## 策略模式
+
+策略模式，主要指对象有某个行为，但是在不同的场景中，该行为有不同的实现算法。策略模式是**行为模式**之一，它对一系列的算法加以封装，为所有算法定义一个抽象的算法接口，并通过继承该抽象算法接口对所有的算法加以封装和实现，具体的算法选择交由客户端决定（策略）。策略模式主要用来平滑地处理算法的切换。
+
+**使用场景：**
+
+- 策略模式的等级结构定义了一个算法或行为族，恰当使用继承可以把公共的代码移到父类里面，从而避免重复的代码。
+- 策略模式将策略的选择逻辑转移到了类中，避免了外部使用多重条件转移语句。
+
+```java
+// 策略接口
+public interface Strategy {
+    double doOperation(double num1, double num2);
+}
+
+// 具体策略类
+public class Addition implements Strategy {
+    @Override
+    public double doOperation(double num1, double num2) {
+        return num1 + num2;
+    }
+}
+
+public class Subtraction implements Strategy {
+    @Override
+    public double doOperation(double num1, double num2) {
+        return num1 - num2;
+    }
+}
+
+public class Multiplication implements Strategy {
+    @Override
+    public double doOperation(double num1, double num2) {
+        return num1 * num2;
+    }
+}
+```
+
+
+
+# 工具使用
+
+## git
+
+git pull
+
+add . / add 文件名    //提交到缓冲区
+
+git commit -m  "备注"    //提交到本地仓库
+
+git push
+
+git log   查看提交日志
+
+git reflog	查看分支切换的日志
+
+git config --list   //查看git配置
+
+git config user.name 
+
+git config user.email
+
+git status  查看本地仓库的提交状态，红色表示修改未添加到暂存区，需要add
+
+git branch   "分支名" 	创建分支
+
+git rebase "分支名"。和git merge类似，这里是改变该分支的基准（根据原理理解）。
+
+
+
+**利用SSH从本地创建文件提交至仓库的步骤：**
+
+1. git init 创建本地仓库
+2. git add .添加至暂存区
+3. git commit -m " " 推送至本地仓库
+4. ssh -T git@github.com连接github
+5. 复制github仓库中的ssh地址。使用命令 git remote add origin  "ssh地址"    连接至仓库
+6. git push -u  feature-branch:remote-feature   本地分支推送至远程分支
+
+**.gitignore文件生效**
+
+当你在本地执行 `git add .` 时，Git 会先检查 `.gitignore` 文件。add之后，git就会对该文件进行追踪。如果想要让git停止追踪，需要清除git的缓存，然后让`.gitignore`文件生效。命令为
+
+```c++
+git rm -r --cached MDN_3/data/
+git commit -m "Stop tracking data"
+```
+
+**冲突处理：**
+
+对于文本文件的冲突：Git把有冲突的段落标记出来了，上面是HEAD，也就是当前所在的分支，中间是分隔线，下面是另一个分支的内容。选择想要的删掉或留下，然后重新git add。
+
+```c++
+# 1. 查看冲突文件
+git status
+# 2. 手动编辑文件（删除冲突标记，保留需要的代码）
+vim conflicted_file.py
+# 3. 标记冲突已解决
+git add conflicted_file.py
+# 4. 完成合并
+git commit
+```
+
+
+
+**git正确开发流程**
+
+正确的git开发流程
+
+**第一步**
+
+在github中创建一个新的仓库，这时候项目是空的，而且只有一个master分支
+
+**第二步**
+
+第一个开发人员进来了，他在本地创建一个develop分支，并且提交到远程
+
+```mipsasm
+git branch  develop
+git push -u origin develop   //push -u 会同时建立本地分支和远程分支的追踪2关系
+```
+
+现在线上就有两个分支master 和 develop 现在这两个分支里面都是空的
+
+**第三步**
+
+一、二步完成后，任何一个参与该项目的开发人员首先要做的就是从develop分支上切一个新分支进行功能开发
+
+```xml
+git checkout -b <本地分支名 feature/***> <origin/develop>//如果远程分支存在，但本地没有该分支，通过这种方式创建追踪关系
+或者
+git fetch origin 远程分支名:本地分支名
+git branch --set-upstream-to=origin/远程分支名    本地分支名
+```
+
+然后进行开发，开发差不多，想提交一下。
+
+```sql
+git status
+git add
+git commit
+```
+
+**第四步**
+
+经过第三步，提交了几次后，感觉差不多了，就可以合并到develop分支
+
+```cpp
+git pull origin develop //先拉取develop中的代码，因为有可能别人已经往上提交过代码了
+git checkout  develop//切到develop分支
+git merge <feature/**>//合并feature/**中的代码到develop中
+git push //提交到develop远程分支上
+git branch -d feature/** //删除本地的分支
+```
+
+**第五步**
+
+某一个开发人员想发布，但是其他人员还在进行开发，先不管别人，他先建立一个新的分支做发布准备
+
+```xml
+git checkout -b <本地分支名realse-0.1> <远程分支名develop>//注意这个realse-tagNo分支的功能是对发布的代码进行改善的地方
+```
+
+创建这个分支相当于测试环境修改，改好后就需要更新master和develop,然后删除分支
+
+```cpp
+git checkout  master//切到master分支
+git merge release-0.1//将release分支合到master上
+git push//将合完的代码提交到远程master
+git checkout develop//切到develop分支
+git merge release-01//将release分支上的代码合到develop分支上
+git push//合完的代码推送到远程的develop分支
+git branch -d release-01//删除本地release分支
+```
+
+**第六步**
+
+打tag追踪，这个过程不太了解
+
+```bash
+git tag -a -0.1 -m 'xxxxxx'
+git push --tags
+```
+
+**Git有提供各种勾子（hook），即仓库有事件发生时触发执行的脚本
+。可以配置一个勾子，在你push中央仓库的master分支时，自动构建好对外发布**
+
+难道这就是传说中的自动化构建？？？
+
+**第七步**
+
+线上环境发现bug了
+
+```cpp
+git checkout -b hotfix/xxx master//从master分支上新建分支
+```
+
+然后开始改bug,改完后
+
+```cpp
+git checkout master//切回master分支
+git merge hotfix/xxx//将改完bug后的代码合并到master
+git push
+```
+
+改完bug的代码还要合到develop中
+
+```bash
+git checkout develop
+git merge hotfic/xxx
+git push
+git branch -d hotfix/xxx
+```
+
+
+
+ 	# github项目搜索
+
+in:name   star:>100  langudage:c++
+
+in:readme
+
+
+
+## Latex
+
+1. 插入图片
+
+   ```latex
+   \begin{figure}[!htbp]
+   \centering
+       \includegraphics[width=0.8\textwidth]{figures/picture1.png}
+   \caption{训练与验证的损失/准确率曲线}
+   \label{fig:curves} %可以通过\ref{fig:curves} 来引用
+   \end{figure}
+   ```
+
+2. 

@@ -1,63 +1,3 @@
-# VScode环境配置
-
-1. 通过快捷键Ctrl+Shift+P打开搜索栏，搜索Edit configuration，打开“c_cpp_properties.json”文件
-
-   ```c++
-   {
-       "configurations": [
-           {
-               "name": "Linux",
-               "includePath": [
-                   "${workspaceFolder}/**"   
-               ],
-               "defines": [],
-               "compilerPath": "/usr/bin/gcc",
-               "cStandard": "gnu17",
-               "cppStandard": "gnu++17",
-               "intelliSenseMode": "linux-gcc-x64"
-           }
-       ],
-       "version": 4
-   }
-   ```
-
-2. 打开命令面板（Ctrl + Shift + P)， 搜索Configure Tasks命令，单击从模板创建tasks.json文件，您将看到任务运行模板列表,选择Others, 然后修改内容
-
-   ```c++
-   {
-       "version": "2.0.0",
-       "tasks": [
-           {
-               "type": "cppbuild",
-               "label": "C/C++: gcc 生成活动文件",
-               "command": "/usr/bin/g++",
-               "args": [
-                   "-fdiagnostics-color=always",
-                   "-g",
-                   "${workspaceFolder}/*.cpp",
-                   "-o",
-                   "${fileDirname}/${fileBasenameNoExtension}"
-               ],
-               "options": {
-                   "cwd": "${fileDirname}"
-               },
-               "problemMatcher": [
-                   "$gcc"
-               ],
-               "group": {
-                   "kind": "build",
-                   "isDefault": true
-               },
-               "detail": "调试器生成的任务。"
-           }
-       ]
-   }
-   ```
-   
-3. window下通过vscode利用remote ssh插件连接Linux虚拟机。
-
-   
-
 # 网络基础
 
 ##分层模型结构
@@ -676,7 +616,7 @@ int main(){
 
 ## 信号
 
-##### error
+### error
 
 1. SIGPIPE信号。当客户端向服务端发送完数据后直接关闭客户端，服务器返回消息的时候，客户端会收到SIGPIPE信号。因为TCP是全双工通信，client端调用close，只能关闭发送的通道，依然可以接收数据，如果此时服务端发送数据过来，客户端收到SIGPIPE信号可能会崩溃，所以我们需要忽略SIGPIPE信号。`signal(SIGPIPE, SIG_IGN);`
 
