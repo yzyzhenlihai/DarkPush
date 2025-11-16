@@ -9,7 +9,7 @@ OSI七层模型：物、数、网、传、会、表、应
 TCP/IP模型：网络接口层、网络层、传输层、应用层
 
 应用层：http、ftp、nfs、ssh、telnet
-
+1
 传输层：TCP、UDP、
 
 网络层：IP、ICMP、IGMP
