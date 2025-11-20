@@ -107,7 +107,7 @@ boolean equals();//判断两个对象是否相等
 
 
 
-###String类
+### String类
 
 创建对象后是个常量，内容和长度不可改变，如果对一个字符串进行修改需要创建一个新的字符串
 
@@ -120,7 +120,7 @@ char[] toCharArray(String str);//将字符串转化为字符数组
 byte[] getBytes();//将字符串转化为字节数组
 ```
 
-###StringBuffer类
+### StringBuffer类
 
 是一个字符串缓冲区，内容和长度可以改变，增添和删除不会产生新对象
 
@@ -180,7 +180,7 @@ int nextInt(int n);//产生[0,n)的随机数
 
 
 
-##集合
+## 集合
 
 import  **java.util ** 包中
 
