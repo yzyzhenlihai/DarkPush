@@ -532,7 +532,7 @@ int main() {
 
 #### search
 
-\#include<algorithm>
+\#include\<algorithm\>
 
 `std::search`  下面是原型
 
@@ -540,7 +540,7 @@ template< class ForwardIt, class T >
 
  ForwardIt search( ForwardIt first, ForwardIt last, const T& value );
 
-是一个非常强大的函数，可以帮助你在一个序列中查找一个**单一的元素**或者一个**子序列**。在\<algorithmn\>中
+是一个非常强大的函数，可以帮助你在一个序列中查找一个 **单一的元素**或者一个**子序列**。在<algorithmn\>中
 
 #### strncat
 
@@ -587,7 +587,7 @@ va_end(valist);//利用va_end释放va_list变量
 
 #### stringstream
 
-\#include<stringstream>
+\#include\<stringstream\>
 
 `stringstream` + `getline` 组合可以对字符串进行分析，在构造时，会创建原始数据的内部副本，所有操作都在副本上进行，原始数据安然无恙。**线程安全**，每个线程都可以创建自己的`stringstream`对象，它们的状态互不干扰。代替`strtok`这种古老危险的C函数
 
