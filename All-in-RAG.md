@@ -1,4 +1,4 @@
-### 项目整体架构
+## 项目整体架构
 #### 项目文件目录
 ```
 ├── 📄 .env.example                    # 环境变量示例文件
@@ -215,3 +215,58 @@ chmod +x start.sh stop.sh
 ```
 
 
+
+## 分工情况
+
+#### 成员 A：核心对话与 RAG 检索 (The "Answer" Owner)【李子民】
+
+**核心使命**：负责用户提问后的核心回答逻辑，解决“怎么做”、“是什么”的问题。 **关注点**：准确性、RAG 检索链路、聊天体验。
+
+- **前端 (Next.js)**:
+  - 负责 **Chat 界面组件** (`components/Chat/` - 需新建)。
+  - 负责 **Markdown 渲染器**，优化 AI 返回的菜谱格式（处理加粗、列表）。
+  - 实现 **流式响应 (Streaming)** 的前端接收逻辑。
+- **后端 (Python)**:
+  - 负责 `rag_modules/intelligent_query_router.py`：判断用户意图。
+  - 负责 `rag_modules/hybrid_retrieval.py` 和 `graph_rag_retrieval.py`：核心检索逻辑。
+  - 负责 `rag_modules/generation_integration.py`：与大模型交互的 Prompt 编写。
+- **数据 (Milvus & Neo4j)**:
+  - 负责 **Milvus 向量库**的构建与查询 (`milvus_index_construction.py`)。
+  - 负责回答 factual 问题（如“番茄炒蛋怎么做？”）时的图数据提取。
+
+####  成员 B：推荐系统与图谱探索 (The "Discovery" Owner)【余正阳】
+
+**核心使命**：负责“不知道吃什么”时的推荐逻辑，以及菜谱详情的深度展示。 **关注点**：个性化、图谱关系可视化、菜谱数据管理。
+
+- **前端 (Next.js)**:
+  - 负责 **首页推荐卡片** 和 **菜谱详情页**。
+  - 负责 **知识图谱可视化**（展示“食材相克”、“营养成分”等节点关系）。
+  - 负责菜谱分类浏览页面 (`dishes/` 数据的展示)。
+- **后端 (Python)**:
+  - 负责 `rag_modules/recipe_recommendation.py`：编写基于图的推荐算法。
+  - 开发 `/recommend` 相关的 API 接口。
+  - 处理 `dishes/` 目录下所有 JSON/Markdown 数据的解析逻辑。
+- **数据 (Neo4j)**:
+  - 是 **Neo4j** 的主要负责人。
+  - 负责 `data/cypher/neo4j_import.cypher` 的维护。
+  - 负责设计图谱 schema（节点：菜品、食材、口味；关系：包含、克制、适合）。
+
+
+
+#### 成员 C：系统架构与会话管理 (The "Platform" Owner)【苑震坤】
+
+**核心使命**：负责系统的地基、用户状态管理以及运维部署。 **关注点**：稳定性、历史记录、环境搭建、多媒体资源。
+
+- **前端 (Next.js)**:
+  - 负责 **App Shell**（整体 Layout、侧边栏、导航）。
+  - 负责 **状态管理 Store** (`store/`) 的搭建，处理 User Session。
+  - 负责 **历史记录列表** UI。
+  - 处理图片资源的加载与展示（`public/` 和 `view.png` 等）。
+- **后端 (Python)**:
+  - 负责 **项目入口** (`main.py`, `config.py`) 的稳定性。
+  - 负责 `rag_modules/session_cache_manager.py`：实现多轮对话的上下文记忆。
+  - 负责 `rag_modules/web_service_handler.py`：统一 API 的错误处理和日志。
+- **运维 (DevOps)**:
+  - 负责 **Docker 环境** (`Dockerfile`, `docker-compose.yml`)。
+  - 负责 **Nginx 配置** 和 启动脚本 (`start.sh`).
+  - 负责 Git 仓库管理（`.gitignore`）和依赖管理 (`requirements.txt`).
